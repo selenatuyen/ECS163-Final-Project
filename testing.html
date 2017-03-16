@@ -20,7 +20,7 @@
 
 	.country:hover {
 	  fill-opacity: 0.7;
-	  stroke: black;
+	  stroke: white;
 	}
   </style>
 </head>
@@ -29,6 +29,7 @@
   <script src="https://d3js.org/d3.v4.min.js"></script>
   <script src="http://d3js.org/queue.v1.min.js"></script>
   <script src="http://d3js.org/topojson.v1.min.js"></script>
+  <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
   <script>
     var width = 960,
     	height = 500;
@@ -38,6 +39,17 @@
     	.attr("height", height)
     	.append("g")
     	.attr("class", "worldmap");
+
+    svg.append("rect")
+    	.attr("width", "100%")
+    	.attr("height", "100%")
+    	.attr("fill", "#455772");
+
+    var importAmount = {};
+
+    var color = d3.scaleThreshold()
+    	.domain([100, 1000, 2500, 5000, 10000, 15000, 20000])
+    	.range(d3.schemeBlues[8]);
 
     var path = d3.geoPath();
 
@@ -52,7 +64,12 @@
     	.attr("class", "tooltip")
     	.style("opacity", 0);
 
-    d3.json("https://d3js.org/world-110m.v1.json", function(error, world) {
+    d3.queue()
+    	.defer(d3.json, "https://d3js.org/world-110m.v1.json")
+    	.defer(d3.csv, "country-import-amount.csv", function(d) { importAmount[parseInt(d.CountryID)] = +d[2014]; })
+    	.await(ready);
+
+    function ready(error, world) {
     	if (error) throw error;
 
     	svg.selectAll("append")
@@ -61,11 +78,29 @@
     		.append("path")
     		.attr("d", path)
     		.attr("class", "country")
-    		.attr("fill", "#696969")
+    		.attr("fill", function(d) { 
+    			if (d.id in importAmount) {
+    				return color( d.import = importAmount[d.id]);
+    			}
+    			else {
+    				return "#A9A9A9";
+    			} });
+    }
+
+    /*d3.json("https://d3js.org/world-110m.v1.json", function(error, world) {
+    	if (error) throw error;
+
+    	svg.selectAll("append")
+    		.data(topojson.feature(world, world.objects.countries).features)
+    		.enter()
+    		.append("path")
+    		.attr("d", path)
+    		.attr("class", "country")
+    		.attr("fill", function(d) { return color(d.imports = importAmount.get(d.id)); })
     		.on("mouseover", function(d) {
     			console.log(d.id);
     		});
-    })
+    })*/
     
   </script>
 </body>

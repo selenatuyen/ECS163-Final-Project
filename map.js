@@ -62,6 +62,10 @@ function ready(error, world) {
 			else {
 				return "#A9A9A9";
 			} 
+        })
+        .on("mouseover", function(d) {
+            d3.select(this)
+                .style("cursor", "pointer");
         });
 
     var arcs = svg.append("g")

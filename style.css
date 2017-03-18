@@ -5,6 +5,7 @@ body {
 	right:0;
 	bottom:0;
 	left:0; 
+  font-family: sans-serif;
 }
 
 svg { 
@@ -40,7 +41,58 @@ div.tooltip {
 
 
 #sidebar {
+  position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
+  width: 20%;
+  height: 100%;
+  background: #000000;
+  opacity: .8;
+}
+
+#bottombar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 8%;
+  width: 80%;
+  background: #000000;
+  opacity: .8;
+}
+
+#pie {
+  color: white;
+  height: 60%;
+  width: 100%;
+  background: gray;
+}
+
+.filters {
+  color: white;
+}
+
+.continents {
+  color: white;
+  text-align: center;
+}
+
+.section {
+  margin: 5px;
+}
+
+.contButton {
+  width: 85%;
+  margin: 2px;
+  padding: 2px;
+}
+
+.years {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.yearButton {
+  margin: 5px;
+  padding: 5px;
 }

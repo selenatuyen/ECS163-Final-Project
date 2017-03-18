@@ -1,0 +1,43 @@
+body { 
+	margin:0;
+	position:fixed;
+	top:0;
+	right:0;
+	bottom:0;
+	left:0; 
+}
+
+svg { 
+	width:100%; 
+	height: 100% 
+}
+
+div.tooltip {
+  position: absolute;
+  text-align: center;
+  width: 150px;
+  height: 58px;
+  padding: 2px;
+  font: 12px sans-serif;
+  color: black;
+  background: lightblue;
+  border: 0px;
+  border-radius: 5px;
+  pointer-events: none;
+}
+
+.country:hover {
+  fill-opacity: 0.7;
+  stroke: white;
+}
+
+.arcs path {
+	stroke-width: 4px;
+	pointer-events: none;
+	fill: none;
+  opacity: .5;
+}
+
+circle {
+  opacity: .6;
+}

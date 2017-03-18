@@ -22,7 +22,7 @@ var path = d3.geoPath();
 
 var projection = d3.geoMercator()
 	.scale(190)
-	.translate([width / 2 + 30, height / 1.5 + 80]);
+	.translate([width / 2 + 20, height / 1.5 + 80]);
 
 var path = d3.geoPath().projection(projection);
 
@@ -68,18 +68,27 @@ function ready(error, world) {
                 .style("cursor", "pointer");
         });
 
+    drawArcs("ALL"); // show all continents at beginning
+}
+
+function drawArcs(continent) {
+    svg.selectAll(".arcs").remove();
+    svg.selectAll(".circle").remove();
+
     var arcs = svg.append("g")
         .attr("class", "arcs");
 
     arcs.selectAll("path")
-        .data(countrycoords)
+        .data(countrycoords.filter(function(d) {
+            return continent == "ALL" || d.continent == continent;
+        }))
         .enter()
         .append("path")
         .attr("id", function(d) {
             return "c" + d.cid;
         })
         .attr("d", function(d) {
-            return makeArc(d, "source", "target", 1.5);
+            return calcArc(d, "source", "target", 1.5);
         })
         .attr("stroke", function(d) {
             return arccolor[d.continent];
@@ -87,14 +96,17 @@ function ready(error, world) {
         .attr("opacity", .6);
 
     var outerCircle = svg.append("g")
-        .attr("class", "outer");
+        .attr("class", "circle");
 
     outerCircle.selectAll("circle")
-        .data(countrycoords)
+        .data(countrycoords.filter(function(d) {
+            return continent == "ALL" || d.continent == continent;
+        }))
         .enter()
         .append("circle")
         .attr("cx", function(d) {
             return projection(d["source"])[0];
+
         })
         .attr("cy", function(d) {
             return projection(d["source"])[1];
@@ -123,10 +135,12 @@ function ready(error, world) {
         });
 
     var innerCircle = svg.append("g")
-        .attr("class", "inner");
+        .attr("class", "circle");
 
     innerCircle.selectAll("circle")
-        .data(countrycoords)
+        .data(countrycoords.filter(function(d) {
+            return continent == "ALL" || d.continent == continent;
+        }))
         .enter()
         .append("circle")
         .attr("cx", function(d) {
@@ -139,7 +153,7 @@ function ready(error, world) {
         .attr("fill", "#FFFFFF");
 }
 
-function makeArc(d, sourceName, targetName, bend) {
+function calcArc(d, sourceName, targetName, bend) {
     bend = bend || 1;
 
     var sourceCoord = d[sourceName], targetCoord = d[targetName];

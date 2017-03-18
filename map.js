@@ -31,6 +31,7 @@ var tip = d3.select("body")
 	.attr("class", "tooltip")
 	.style("opacity", 0);
 
+
 d3.queue()
 	.defer(d3.json, "https://d3js.org/world-110m.v1.json")
 	.defer(d3.csv, "data/country-import-amount.csv", function(d) { importAmount[parseInt(d.CountryID)] = +d[2014]; })
@@ -51,7 +52,47 @@ function ready(error, world) {
 			}
 			else {
 				return "#A9A9A9";
-			} });
+			} 
+        });
+
+    var arcs = svg.append("g")
+        .attr("class", "arcs");
+
+    arcs.selectAll("path")
+        .data(countrycoords)
+        .enter()
+        .append("path")
+        .attr("d", function(d) {
+            return makeArc(d, "source", "target", 1.5);
+        });
+}
+
+function makeArc(d, sourceName, targetName, bend) {
+    bend = bend || 1;
+
+    var sourceCoord = d[sourceName], targetCoord = d[targetName];
+
+    if (sourceCoord && targetCoord) {
+        var sourceXY = projection(sourceCoord), 
+            targetXY = projection(targetCoord);
+
+        var sourceX = sourceXY[0],
+            sourceY = sourceXY[1];
+
+        var targetX = targetXY[0],
+            targetY = targetXY[1];
+
+        var dx = targetX - sourceX,
+            dy = targetY - sourceY,
+            dr = Math.sqrt(dx*dx + dy*dy)*bend;
+
+        var isWest = (targetX - sourceX) < 0;
+        if (isWest) {
+            return "M" + targetX + "," + targetY + "A" + dr + "," + dr + " 0 0,1 " + sourceX + "," + sourceY;
+        } else {
+            return "M0,0,l0,0z";
+        }
+    }
 }
 
 /*d3.json("https://d3js.org/world-110m.v1.json", function(error, world) {

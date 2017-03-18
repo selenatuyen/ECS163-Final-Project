@@ -57,7 +57,7 @@ function ready(error, world) {
 		.attr("class", "country")
 		.attr("fill", function(d) { 
 			if (d.id in importAmount) {
-				return color( d.import = importAmount[d.id]);
+                return "#FFFFFF"
 			}
 			else {
 				return "#A9A9A9";
@@ -72,14 +72,15 @@ function ready(error, world) {
         .enter()
         .append("path")
         .attr("id", function(d) {
-            return d.cid;
+            return "c" + d.cid;
         })
         .attr("d", function(d) {
             return makeArc(d, "source", "target", 1.5);
         })
         .attr("stroke", function(d) {
             return arccolor[d.continent];
-        });
+        })
+        .attr("opacity", .6);
 
     var outerCircle = svg.append("g")
         .attr("class", "outer");
@@ -98,16 +99,23 @@ function ready(error, world) {
         .attr("fill", function(d) {
             return arccolor[d.continent];
         })
-        .on("mouseover", function() {
+        .attr("opacity", .6)
+        .on("mouseover", function(d) {
             d3.select(this)
                 .style("cursor", "pointer")
                 .attr("r", "8px")
                 .attr("opacity", 1);
+
+            d3.select('#c' + d.cid)
+                .style("opacity", 1);
         })
-        .on("mouseout", function() {
+        .on("mouseout", function(d) {
             d3.select(this)
                 .attr("r", "6px")
                 .attr("opacity", .6);
+
+            d3.select('#c' + d.cid)
+                .style("opacity", .6);
         });
 
     var innerCircle = svg.append("g")

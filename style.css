@@ -41,3 +41,9 @@ div.tooltip {
 circle {
   opacity: .6;
 }
+
+#sidebar {
+  top: 0;
+  right: 0;
+  bottom: 0;
+}

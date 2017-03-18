@@ -71,6 +71,9 @@ function ready(error, world) {
         .data(countrycoords)
         .enter()
         .append("path")
+        .attr("id", function(d) {
+            return d.cid;
+        })
         .attr("d", function(d) {
             return makeArc(d, "source", "target", 1.5);
         })
@@ -94,6 +97,17 @@ function ready(error, world) {
         .attr("r", "6px")
         .attr("fill", function(d) {
             return arccolor[d.continent];
+        })
+        .on("mouseover", function() {
+            d3.select(this)
+                .style("cursor", "pointer")
+                .attr("r", "8px")
+                .attr("opacity", 1);
+        })
+        .on("mouseout", function() {
+            d3.select(this)
+                .attr("r", "6px")
+                .attr("opacity", .6);
         });
 
     var innerCircle = svg.append("g")

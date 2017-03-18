@@ -23,7 +23,7 @@ var countrycoords = [
         continent: "EU"
     }, {
         source: [-71, -30], // chile
-        target: [-98.585522, 39.8333333],,
+        target: [-98.585522, 39.8333333],
         continent: "SA"
     }, {
         source: [12.8333, 42.8333], // italy

@@ -31,13 +31,13 @@ var tip = d3.select("body")
 	.attr("class", "tooltip")
 	.style("opacity", 0);
 
-var arcColor = {
-    "AF": "",
-    "AS": "",
-    "EU": "",
-    "NA": "",
-    "OC": "",
-    "SA": ""
+var arccolor = {
+    "AF": "#F9DE7C",
+    "AS": "#D87093",
+    "EU": "#F7986C",
+    "NA": "#80639B",
+    "OC": "#5DBFCC",
+    "SA": "#9BEFB6"
 };
 
 
@@ -75,7 +75,7 @@ function ready(error, world) {
             return makeArc(d, "source", "target", 1.5);
         })
         .attr("stroke", function(d) {
-
+            return arccolor[d.continent];
         });
 
     var outerCircle = svg.append("g")
@@ -93,7 +93,7 @@ function ready(error, world) {
         })
         .attr("r", "6px")
         .attr("fill", function(d) {
-
+            return arccolor[d.continent];
         });
 
     var innerCircle = svg.append("g")

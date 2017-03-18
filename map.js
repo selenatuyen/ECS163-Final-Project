@@ -21,8 +21,8 @@ var color = d3.scaleThreshold()
 var path = d3.geoPath();
 
 var projection = d3.geoMercator()
-	.scale(150)
-	.translate([width / 2, height / 1.5]);
+	.scale(190)
+	.translate([width / 2 + 30, height / 1.5 + 80]);
 
 var path = d3.geoPath().projection(projection);
 
@@ -30,6 +30,15 @@ var tip = d3.select("body")
 	.append("div")
 	.attr("class", "tooltip")
 	.style("opacity", 0);
+
+var arcColor = {
+    "AF": "",
+    "AS": "",
+    "EU": "",
+    "NA": "",
+    "OC": "",
+    "SA": ""
+};
 
 
 d3.queue()
@@ -64,7 +73,44 @@ function ready(error, world) {
         .append("path")
         .attr("d", function(d) {
             return makeArc(d, "source", "target", 1.5);
+        })
+        .attr("stroke", function(d) {
+
         });
+
+    var outerCircle = svg.append("g")
+        .attr("class", "outer");
+
+    outerCircle.selectAll("circle")
+        .data(countrycoords)
+        .enter()
+        .append("circle")
+        .attr("cx", function(d) {
+            return projection(d["source"])[0];
+        })
+        .attr("cy", function(d) {
+            return projection(d["source"])[1];
+        })
+        .attr("r", "6px")
+        .attr("fill", function(d) {
+
+        });
+
+    var innerCircle = svg.append("g")
+        .attr("class", "inner");
+
+    innerCircle.selectAll("circle")
+        .data(countrycoords)
+        .enter()
+        .append("circle")
+        .attr("cx", function(d) {
+            return projection(d["source"])[0];
+        })
+        .attr("cy", function(d) {
+            return projection(d["source"])[1];
+        })
+        .attr("r", "3px")
+        .attr("fill", "#FFFFFF");
 }
 
 function makeArc(d, sourceName, targetName, bend) {
@@ -86,11 +132,12 @@ function makeArc(d, sourceName, targetName, bend) {
             dy = targetY - sourceY,
             dr = Math.sqrt(dx*dx + dy*dy)*bend;
 
-        var isWest = (targetX - sourceX) < 0;
+        var isWest = (sourceX - targetX) < 0;
         if (isWest) {
-            return "M" + targetX + "," + targetY + "A" + dr + "," + dr + " 0 0,1 " + sourceX + "," + sourceY;
+            return "M" + sourceX + "," + sourceY + "A" + dr + "," + dr + " 0 0,1 " + targetX + "," + targetY;
         } else {
-            return "M0,0,l0,0z";
+            // return "M0,0,l0,0z";
+            return "M" + targetX + "," + targetY + "A" + dr + "," + dr + " 0 0,1 " + sourceX + "," + sourceY;
         }
     }
 }

@@ -32,8 +32,12 @@ div.tooltip {
 }
 
 .arcs path {
-	stroke-width: 2px;
-	stroke: tomato;
+	stroke-width: 4px;
 	pointer-events: none;
 	fill: none;
+  opacity: .5;
+}
+
+circle {
+  opacity: .6;
 }

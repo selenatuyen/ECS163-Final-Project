@@ -39,9 +39,8 @@ div.tooltip {
 
 .arcs path {
 	stroke-width: 4px;
-	pointer-events: none;
 	fill: none;
-  opacity: .5;
+  opacity: .6;
 }
 
 
@@ -52,8 +51,8 @@ div.tooltip {
   bottom: 0;
   width: 20%;
   height: 100%;
-  background: #000000;
-  opacity: .8;
+  background: rgba(0,0,0,.8);
+  /*opacity: .8;*/
 }
 
 #bottombar {
@@ -93,10 +92,16 @@ div.tooltip {
   border: none;
   color: black;
   cursor: pointer;
+  opacity: .9;
+}
+
+.contButton:hover {
+  opacity: 1;
 }
 
 .selectedCont {
   border: 2px solid white;
+  opacity: 1;
 }
 
 .years {

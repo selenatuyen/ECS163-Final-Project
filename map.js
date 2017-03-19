@@ -26,6 +26,7 @@ var projection = d3.geoMercator()
 
 var path = d3.geoPath().projection(projection);
 
+
 var tip = d3.select("body")
 	.append("div")
 	.attr("class", "tooltip")
@@ -44,7 +45,7 @@ var arccolor = {
 
 d3.queue()
 	.defer(d3.json, "https://d3js.org/world-110m.v1.json")
-	.defer(d3.csv, "data/country-import-amount.csv", function(d) { importAmount[parseInt(d.CountryID)] = +d[2014]; })
+	.defer(d3.csv, "Data/country-import-amount.csv", function(d) { importAmount[parseInt(d.CountryID)] = +d[2014]; })
 	.await(ready);
 
 function ready(error, world) {
@@ -56,27 +57,38 @@ function ready(error, world) {
 		.append("path")
 		.attr("d", path)
 		.attr("class", "country")
+        .attr("title", function(d) {
+            return d.id;
+        })
 		.attr("fill", function(d) { 
-			if (d.id in importAmount) {
+			if (parseInt(d.id, 10) in importAmount) {
                 return "#FFFFFF"
-			}
-			else {
-				return "#A9A9A9";
-			} 
+			} else if (d.id == 840) {
+				return "#880000";
+			} else {
+                return "#A9A9A9";
+            }
         })
         .on("mouseover", function(d) {
-            d3.select(this)
-                .style("cursor", "pointer");
+            d3.select(this).style("cursor", "pointer");
+            console.log(d.id);
+            d3.select("#c" + parseInt(d.id, 10))
+                .style("opacity", 1);
+        })
+        .on("mouseout", function(d) {
+            d3.select("#c" + parseInt(d.id, 10))
+                .style("opacity", .6);
+        })
+        .on("click", function(d) {
+            showPopup();
         });
 
-    d3.selectAll('.contButton')
-        .each(function() {
-            var id = d3.select(this).attr("id");
-            d3.select(this)
-                .style("background", function(x) {
-                    return arccolor[id];
-                });
+    d3.selectAll('.contButton').each(function() {
+        var id = d3.select(this).attr("id");
+        d3.select(this).style("background", function(x) {
+            return arccolor[id];
         });
+    });
 
     drawArcs("ALL"); // show all continents at beginning
     animate(2014);
@@ -110,7 +122,31 @@ function drawArcs(continent) {
         .attr("stroke", function(d) {
             return arccolor[d.continent];
         })
-        .attr("opacity", .6);
+        .attr("opacity", .6)
+        .attr("stroke-dasharray", function() {
+            var totalLength = this.getTotalLength();
+            return totalLength + " " + totalLength;
+        })
+        .attr("stroke-dashoffset", function(d) {
+            var totalLength = -this.getTotalLength();
+            if (d.continent == "NA")
+                totalLength = totalLength * -1;
+            return totalLength;
+        })
+        .transition()
+            .duration(1000)
+            .ease(d3.easeLinear)
+            .attr("stroke-dashoffset", 0);
+
+    arcs.selectAll("path")
+        .on("mouseover", function(d) {
+            console.log(d.cid + " " + d.continent);
+            d3.select(this).style("cursor", "pointer")
+                .style("opacity", 1);
+        })
+        .on("mouseout", function(d) {
+            d3.select(this).style("opacity", .6);
+        });
 
     var outerCircle = svg.append("g")
         .attr("class", "circle");

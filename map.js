@@ -203,6 +203,7 @@ function animate(year){
     var jsonObjs = {
         countries:[]
     };
+    var maxCap = 50000;
     d3.csv("data/country-import-amount.csv", function(err, data){
         if(err){
             console.log(err);
@@ -211,21 +212,35 @@ function animate(year){
             var cntry = d["Country"];
             var amt = d[year];
             var cid = "c" + d["CountryID"];
-            jsonObjs.countries.push({"cids": cid, "name": cntry, "imports": amt});
+            var rt = maxCap;
+            rt = maxCap/amt * 100;
+            if(rt <+ 200){
+                rt = 200;
+            }
+            else if(rt > 15000){
+                rt = 11000;
+            }
+            // console.log(cntry + " " + rt);
+            jsonObjs.countries.push({"cids": cid, "name": cntry, "imports": amt, "rate": rt});
         });
-        var svg = d3.select("svg");
-        var daPath = "path#" + jsonObjs.countries[0].cids;
-        var path = d3.select(daPath);//.attr("d");
-        console.log("daf " + path);
-        
-        var startPoint =pathStartPoint(path);
-        console.log("path start:" + startPoint);
-        
-        var marker = svg.append("circle").attr("class", "marbol");
-        marker.attr("r", 3)
-            .attr("transform", "translate(" + startPoint + ")");
 
-       transition();
+        for(var i = 0; i < jsonObjs.countries.length; i++){
+            var svg = d3.select("svg");
+            var rt = jsonObjs.countries[i].rate; 
+            var daPath = "path#" + jsonObjs.countries[i].cids;
+            var path = d3.select(daPath);//.attr("d");
+            // console.log("daf " + path);
+            
+            var startPoint =pathStartPoint(path);
+            console.log("path start:" + startPoint);
+            
+            var marker = svg.append("circle").attr("class", "marbol");
+            marker.attr("r", 3)
+                .attr("transform", "translate(" + startPoint + ")");
+
+        transitionAll(marker, i, rt);
+        // console.log("transition called");
+        }
 
         function pathStartPoint(path){
             var d = path.attr("d");
@@ -233,22 +248,31 @@ function animate(year){
             return dsplitted[1].split(",");
         }
 
-        function transition(){
+        function transitionAll(marker, ind, rt){
+            // console.log(marker);
             marker.transition()
-                .duration(5500)
-                .attrTween("transform", translateAlong(path.node()))
-                .each("end", transition);
+                .duration(rt).ease(d3.easeLinear)
+                .attrTween("transform", translateAlong(path.node(), ind))
+                .on("end", partial(transitionAll, marker, ind));
         }
 
-        function translateAlong(path){
+        function translateAlong(path, ind){
             var l = path.getTotalLength();
             return function(i){
                 return function(t){
-                    var p = path.getPointAtLength(t * l);
+                    var p = path.getPointAtLength(t* l);
                     return "translate(" + p.x + "," + p.y + ")";
                 }
             }
-        }            
+        }  
+
+        function partial(func){
+            var args = Array.prototype.slice.call(arguments, 1);
+            return function(){
+                var allArguments = args.concat(Array.prototype.slice.call(arguments));
+                return func.apply(this, allArguments);
+            };
+        }          
     }); 
 }
 

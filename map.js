@@ -238,7 +238,7 @@ function animate(year){
             marker.attr("r", 3)
                 .attr("transform", "translate(" + startPoint + ")");
 
-        transitionAll(marker, i, rt);
+        transitionAll(marker, path, rt);
         // console.log("transition called");
         }
 
@@ -248,15 +248,15 @@ function animate(year){
             return dsplitted[1].split(",");
         }
 
-        function transitionAll(marker, ind, rt){
+        function transitionAll(marker, path, rt){
             // console.log(marker);
             marker.transition()
                 .duration(rt).ease(d3.easeLinear)
-                .attrTween("transform", translateAlong(path.node(), ind))
-                .on("end", partial(transitionAll, marker, ind));
+                .attrTween("transform", translateAlong(path.node()))
+                .on("end", partial(transitionAll, marker, path, rt));
         }
 
-        function translateAlong(path, ind){
+        function translateAlong(path){
             var l = path.getTotalLength();
             return function(i){
                 return function(t){

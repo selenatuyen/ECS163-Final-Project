@@ -13,6 +13,7 @@ svg.append("rect")
 	.attr("fill", "#455772");
 
 var importAmount = {};
+var importData, selectedContinent = "ALL";
 
 var color = d3.scaleThreshold()
 	.domain([100, 1000, 2500, 5000, 10000, 15000, 20000])
@@ -45,11 +46,13 @@ var arccolor = {
 
 d3.queue()
 	.defer(d3.json, "https://d3js.org/world-110m.v1.json")
-	.defer(d3.csv, "Data/country-import-amount.csv", function(d) { importAmount[parseInt(d.CountryID)] = +d[2014]; })
+	.defer(d3.csv, "Data/country-import-amount.csv")//, function(d) { importAmount[parseInt(d.CountryID)] = +d[2014]; })
 	.await(ready);
 
-function ready(error, world) {
+function ready(error, world, csv) {
 	if (error) throw error;
+
+    importData = csv;
 
 	svg.selectAll("append")
 		.data(topojson.feature(world, world.objects.countries).features)
@@ -103,6 +106,8 @@ function drawArcs(continent) {
 
     d3.select("#" + continent)
         .classed("selectedCont", true);
+
+    selectedContinent = continent;
 
     var arcs = svg.append("g")
         .attr("class", "arcs");
@@ -204,6 +209,8 @@ function drawArcs(continent) {
         })
         .attr("r", "3px")
         .attr("fill", "#FFFFFF");
+
+    animate(2014);
 }
 
 function calcArc(d, sourceName, targetName, bend) {
@@ -236,15 +243,19 @@ function calcArc(d, sourceName, targetName, bend) {
 }
 
 function animate(year){
+    svg.selectAll(".marbol").remove();
+
     var jsonObjs = {
         countries:[]
     };
     var maxCap = 50000;
-    d3.csv("data/country-import-amount.csv", function(err, data){
-        if(err){
-            console.log(err);
-        }
-        data.forEach(function(d){
+    // d3.csv("data/country-import-amount.csv", function(err, data){
+    //     if(err){
+    //         console.log(err);
+    //     }
+    importData.forEach(function(d){
+        console.log(d.Continent);
+        if (d.Continent == selectedContinent || selectedContinent == "ALL") {
             var cntry = d["Country"];
             var amt = d[year];
             var cid = "c" + d["CountryID"];
@@ -258,58 +269,61 @@ function animate(year){
             }
             // console.log(cntry + " " + rt);
             jsonObjs.countries.push({"cids": cid, "name": cntry, "imports": amt, "rate": rt});
-        });
+        }
+    });
 
-        for(var i = 0; i < jsonObjs.countries.length; i++){
-            var svg = d3.select("svg");
-            var rt = jsonObjs.countries[i].rate; 
-            var daPath = "path#" + jsonObjs.countries[i].cids;
-            var path = d3.select(daPath);//.attr("d");
-            // console.log("daf " + path);
-            
-            var startPoint =pathStartPoint(path);
-            console.log("path start:" + startPoint);
-            
-            var marker = svg.append("circle").attr("class", "marbol");
-            marker.attr("r", 3)
-                .attr("transform", "translate(" + startPoint + ")");
+
+    for(var i = 0; i < jsonObjs.countries.length; i++){
+        //var svg = d3.select("svg");
+        var rt = jsonObjs.countries[i].rate; 
+        var daPath = "path#" + jsonObjs.countries[i].cids;
+        var path = d3.select(daPath);//.attr("d");
+        // console.log("daf " + path);
+        
+        var startPoint =pathStartPoint(path);
+        console.log("path start:" + startPoint);
+        
+        var marker = svg.append("circle").attr("class", "marbol");
+        marker.attr("r", 3)
+            .attr("transform", "translate(" + startPoint + ")");
 
         transitionAll(marker, path, rt);
         // console.log("transition called");
-        }
+        // break;
+    }
 
-        function pathStartPoint(path){
-            var d = path.attr("d");
-            var dsplitted = d.split(" ");
-            return dsplitted[1].split(",");
-        }
+    function pathStartPoint(path){
+        var d = path.attr("d");
+        var dsplitted = d.split(" ");
+        return dsplitted[1].split(",");
+    }
 
-        function transitionAll(marker, path, rt){
-            // console.log(marker);
-            marker.transition()
-                .duration(rt).ease(d3.easeLinear)
-                .attrTween("transform", translateAlong(path.node()))
-                .on("end", partial(transitionAll, marker, path, rt));
-        }
+    function transitionAll(marker, path, rt){
+        // console.log(marker);
+        marker.transition()
+            .duration(rt).ease(d3.easeLinear)
+            .attrTween("transform", translateAlong(path.node()))
+            .on("end", partial(transitionAll, marker, path, rt));
+    }
 
-        function translateAlong(path){
-            var l = path.getTotalLength();
-            return function(i){
-                return function(t){
-                    var p = path.getPointAtLength(t* l);
-                    return "translate(" + p.x + "," + p.y + ")";
-                }
+    function translateAlong(path){
+        var l = path.getTotalLength();
+        return function(i){
+            return function(t){
+                var p = path.getPointAtLength(t* l);
+                return "translate(" + p.x + "," + p.y + ")";
             }
-        }  
+        }
+    }  
 
-        function partial(func){
-            var args = Array.prototype.slice.call(arguments, 1);
-            return function(){
-                var allArguments = args.concat(Array.prototype.slice.call(arguments));
-                return func.apply(this, allArguments);
-            };
-        }          
-    }); 
+    function partial(func){
+        var args = Array.prototype.slice.call(arguments, 1);
+        return function(){
+            var allArguments = args.concat(Array.prototype.slice.call(arguments));
+            return func.apply(this, allArguments);
+        };
+    }          
+    // }); 
 }
 
 

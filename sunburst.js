@@ -14,7 +14,7 @@ var Sunburst = d3Kit.factory.createChart(DEFAULT_OPTIONS, CUSTOM_EVENTS, constru
 var chart = new Sunburst('.chart');
 
 chart
-  .autoResize('both');
+  .autoResize('both')
   .on('arcClick', chart.zoom);
 
 d3.json('data/all.json', function(error, data){chart.data(data);});

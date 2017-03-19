@@ -1,306 +1,145 @@
-// Dimensions of sunburst.
-var width = 750;
-var height = 600;
-var radius = Math.min(width, height) / 2;
-
-// Breadcrumb dimensions: width, height, spacing, width of tip/tail.
-var b = {
-  w: 75, h: 30, s: 3, t: 10
+var DEFAULT_OPTIONS = {
+  margin: {top: 10, right: 10, bottom: 10, left: 10}
 };
 
-// Mapping of step names to colors.
-var colors = {
-  "Canada": "#5687d1",
-};
+var CUSTOM_EVENTS = [
+  'arcClick',
+  'arcMouseOver',
+  'arcMouseMove',
+  'arcMouseOut'
+];
 
-// Total size of all segments; we set this later, after loading the data.
-var totalSize = 0; 
+var Sunburst = d3Kit.factory.createChart(DEFAULT_OPTIONS, CUSTOM_EVENTS, constructor);
 
-var vis = d3.select("#chart").append("svg:svg")
-    .attr("width", width)
-    .attr("height", height)
-    .append("svg:g")
-    .attr("id", "container")
-    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+var chart = new Sunburst('.chart');
 
-var partition = d3.partition()
-    .size([2 * Math.PI, radius * radius]);
+chart
+  .autoResize('both')
+  .on('arcClick', chart.zoom);
 
-var arc = d3.arc()
-    .startAngle(function(d) { return d.x0; })
-    .endAngle(function(d) { return d.x1; })
-    .innerRadius(function(d) { return Math.sqrt(d.y0); })
-    .outerRadius(function(d) { return Math.sqrt(d.y1); });
+d3.json('data/all.json', function(error, data){chart.data(data);});
+console.log(data);
 
-// Use d3.text and d3.csvParseRows so that we do not need to have a header
-// row, and can receive the csv as an array of arrays.
+function constructor(skeleton){
 
-d3.text("data/country-import-amount.csv", function(text) {
-  var csv = d3.csvParseRows(text);
-  var json = buildHierarchy(csv);
-  createVisualization(json);
-});
+  skeleton.autoResizeToAspectRatio(1);
 
- 
+  var layers = skeleton.getLayerOrganizer();
+  layers.create(['sunburst']);
 
+  var dispatch = skeleton.getDispatcher();
 
-// Main function to draw and set up the visualization, once we have the data.
-function createVisualization(json) {
+  var radius = Math.min(skeleton.getInnerWidth(), skeleton.getInnerHeight()) / 2;
 
-  // Basic setup of page elements.
-  initializeBreadcrumbTrail();
-  drawLegend();
-  d3.select("#togglelegend").on("click", toggleLegend);
+  var x = d3.scaleLinear()
+    .range([0, 2 * Math.PI]);
 
-  // Bounding circle underneath the sunburst, to make it easier to detect
-  // when the mouse leaves the parent g.
-  vis.append("svg:circle")
-      .attr("r", radius)
-      .style("opacity", 0);
+  var y = d3.scaleSqrt()
+    .range([0, radius]);
 
-  // Turn the data into a d3 hierarchy and calculate the sums.
-  var root = d3.hierarchy(json)
-      .sum(function(d) { return d.size; })
-      .sort(function(a, b) { return b.value - a.value; });
-  
-  // For efficiency, filter nodes to keep only those large enough to see.
-  var nodes = partition(root).descendants()
-      .filter(function(d) {
-          return (d.x1 - d.x0 > 0.005); // 0.005 radians = 0.29 degrees
-      });
+  var color = d3.scaleOrdinal(d3.schemeCategory20);
 
-  var path = vis.data([json]).selectAll("path")
-      .data(nodes)
-      .enter().append("svg:path")
-      .attr("display", function(d) { return d.depth ? null : "none"; })
+  var core = layers.get('sunburst').append("g")
+    .attr("transform", "translate(" + skeleton.getInnerWidth() / 2 + "," + (skeleton.getInnerHeight() / 2 + 10) + ")");
+
+  var partition = d3.partition();
+
+  var arc = d3.arc()
+    .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x0))); })
+    .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x1))); })
+    .innerRadius(function(d) { return Math.max(0, y(d.y0)); })
+    .outerRadius(function(d) { return Math.max(0, y(d.y1)); });
+
+  // Keep track of the node that is currently being displayed as the root.
+  var node;
+
+  // When switching data: interpolate the arcs in data space.
+  function arcTweenData(a, i) {
+    var oi = d3.interpolate({x: a.x0, dx: a.dx0}, a);
+    function tween(t) {
+      var b = oi(t);
+      a.x0 = b.x;
+      a.dx0 = b.dx;
+      return arc(b);
+    }
+    if (i == 0) {
+     // If we are on the first arc, adjust the x domain to match the root node
+     // at the current zoom level. (We only need to do this once.)
+      var xd = d3.interpolate(x.domain(), [node.x, node.x + node.dx]);
+      return function(t) {
+        x.domain(xd(t));
+        return tween(t);
+      };
+    } else {
+      return tween;
+    }
+  }
+
+  // When zooming: interpolate the scales.
+  function arcTweenZoom(d){
+    var xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
+        yd = d3.interpolate(y.domain(), [0, 1]),
+        yr = d3.interpolate(y.range(), [0, radius]);
+    return function(d, i) {
+      /* jshint ignore:start */
+      return i
+        ? function(t) { return arc(d); }
+        : function(t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); return arc(d); };
+      /* jshint ignore:end */
+    };
+  }
+
+  function colorFn(d){
+    if(d.depth===0) return '#ccc';
+    return color((d.children ? d : d.parent).data.name);
+  }
+
+  var visualize = d3Kit.helper.debounce(function(){
+    if(!skeleton.hasData()) return skeleton;
+
+    var root = d3.hierarchy(skeleton.data());
+    root.sum(function(d) { return 1; });
+    node = root;
+
+    radius = Math.min(skeleton.getInnerWidth(), skeleton.getInnerHeight()) / 2;
+    y.range([0, radius]);
+    core.attr("transform", "translate(" + skeleton.getInnerWidth() / 2 + "," + (skeleton.getInnerHeight() / 2 + 10) + ")");
+
+    var path = core.selectAll("path")
+      .data(partition(root).descendants());
+
+    path.enter().append("path")
+      .call(d3Kit.helper.bindMouseEventsToDispatcher, dispatch, 'arc')
+      .style('fill', colorFn)
       .attr("d", arc)
-      .attr("fill-rule", "evenodd")
-      .style("fill", function(d) { return colors[d.data.name]; })
-      .style("opacity", 1)
-      .on("mouseover", mouseover);
+      .append('title')
+      .text( function(d) {return d.name;});
 
-  // Add the mouseleave handler to the bounding circle.
-  d3.select("#container").on("mouseleave", mouseleave);
+    path
+      .attr("d", arc);
 
-  // Get total size of the tree = value of root node from partition.
-  totalSize = path.datum().value;
- };
+    return skeleton;
+  }, 10);
 
-// Fade all but the current sequence, and show it in the breadcrumb trail.
-function mouseover(d) {
-
-  var percentage = (100 * d.value / totalSize).toPrecision(3);
-  var percentageString = percentage + "%";
-  if (percentage < 0.1) {
-    percentageString = "< 0.1%";
-  }
-
-  d3.select("#percentage")
-      .text(percentageString);
-
-  d3.select("#explanation")
-      .style("visibility", "");
-
-  var sequenceArray = d.ancestors().reverse();
-  sequenceArray.shift(); // remove root node from the array
-  updateBreadcrumbs(sequenceArray, percentageString);
-
-  // Fade all the segments.
-  d3.selectAll("path")
-      .style("opacity", 0.3);
-
-  // Then highlight only those that are an ancestor of the current segment.
-  vis.selectAll("path")
-      .filter(function(node) {
-                return (sequenceArray.indexOf(node) >= 0);
-              })
-      .style("opacity", 1);
-}
-
-// Restore everything to full opacity when moving off the visualization.
-function mouseleave(d) {
-
-  // Hide the breadcrumb trail
-  d3.select("#trail")
-      .style("visibility", "hidden");
-
-  // Deactivate all segments during transition.
-  d3.selectAll("path").on("mouseover", null);
-
-  // Transition each segment to full opacity and then reactivate it.
-  d3.selectAll("path")
+  function zoom(target, i) {
+    node = target;
+    core.selectAll("path")
       .transition()
-      .duration(1000)
-      .style("opacity", 1)
-      .on("end", function() {
-              d3.select(this).on("mouseover", mouseover);
-            });
-
-  d3.select("#explanation")
-      .style("visibility", "hidden");
-}
-
-function initializeBreadcrumbTrail() {
-  // Add the svg area.
-  var trail = d3.select("#sequence").append("svg:svg")
-      .attr("width", width)
-      .attr("height", 50)
-      .attr("id", "trail");
-  // Add the label at the end, for the percentage.
-  trail.append("svg:text")
-    .attr("id", "endlabel")
-    .style("fill", "#000");
-}
-
-// Generate a string that describes the points of a breadcrumb polygon.
-function breadcrumbPoints(d, i) {
-  var points = [];
-  points.push("0,0");
-  points.push(b.w + ",0");
-  points.push(b.w + b.t + "," + (b.h / 2));
-  points.push(b.w + "," + b.h);
-  points.push("0," + b.h);
-  if (i > 0) { // Leftmost breadcrumb; don't include 6th vertex.
-    points.push(b.t + "," + (b.h / 2));
+        .duration(1000)
+        .attrTween("d", arcTweenZoom(target));
   }
-  return points.join(" ");
-}
 
-// Update the breadcrumb trail to show the current sequence and percentage.
-function updateBreadcrumbs(nodeArray, percentageString) {
+  function clear(){
+    core.call(d3Kit.helper.removeAllChildren);
+    return skeleton;
+  }
 
-  // Data join; key function combines name and depth (= position in sequence).
-  var trail = d3.select("#trail")
-      .selectAll("g")
-      .data(nodeArray, function(d) { return d.data.name + d.depth; });
+  skeleton.on('data', visualize);
+  skeleton.on('resize', visualize);
 
-  // Remove exiting nodes.
-  trail.exit().remove();
-
-  // Add breadcrumb and label for entering nodes.
-  var entering = trail.enter().append("svg:g");
-
-  entering.append("svg:polygon")
-      .attr("points", breadcrumbPoints)
-      .style("fill", function(d) { return colors[d.data.name]; });
-
-  entering.append("svg:text")
-      .attr("x", (b.w + b.t) / 2)
-      .attr("y", b.h / 2)
-      .attr("dy", "0.35em")
-      .attr("text-anchor", "middle")
-      .text(function(d) { return d.data.name; });
-
-  // Merge enter and update selections; set position for all nodes.
-  entering.merge(trail).attr("transform", function(d, i) {
-    return "translate(" + i * (b.w + b.s) + ", 0)";
+  return skeleton.mixin({
+    clear: clear,
+    visualize: visualize,
+    zoom: zoom
   });
-
-  // Now move and update the percentage at the end.
-  d3.select("#trail").select("#endlabel")
-      .attr("x", (nodeArray.length + 0.5) * (b.w + b.s))
-      .attr("y", b.h / 2)
-      .attr("dy", "0.35em")
-      .attr("text-anchor", "middle")
-      .text(percentageString);
-
-  // Make the breadcrumb trail visible, if it's hidden.
-  d3.select("#trail")
-      .style("visibility", "");
-
 }
-
-function drawLegend() {
-
-  // Dimensions of legend item: width, height, spacing, radius of rounded rect.
-  var li = {
-    w: 75, h: 30, s: 3, r: 3
-  };
-
-  var legend = d3.select("#legend").append("svg:svg")
-      .attr("width", li.w)
-      .attr("height", d3.keys(colors).length * (li.h + li.s));
-
-  var g = legend.selectAll("g")
-      .data(d3.entries(colors))
-      .enter().append("svg:g")
-      .attr("transform", function(d, i) {
-              return "translate(0," + i * (li.h + li.s) + ")";
-           });
-
-  g.append("svg:rect")
-      .attr("rx", li.r)
-      .attr("ry", li.r)
-      .attr("width", li.w)
-      .attr("height", li.h)
-      .style("fill", function(d) { return d.value; });
-
-  g.append("svg:text")
-      .attr("x", li.w / 2)
-      .attr("y", li.h / 2)
-      .attr("dy", "0.35em")
-      .attr("text-anchor", "middle")
-      .text(function(d) { return d.key; });
-}
-
-function toggleLegend() {
-  var legend = d3.select("#legend");
-  if (legend.style("visibility") == "hidden") {
-    legend.style("visibility", "");
-  } else {
-    legend.style("visibility", "hidden");
-  }
-}
-
-// Take a 2-column CSV and transform it into a hierarchical structure suitable
-// for a partition layout. The first column is a sequence of step names, from
-// root to leaf, separated by hyphens. The second column is a count of how 
-// often that sequence occurred.
-
-function buildHierarchy(csv) {
-  var root = {"name": "root", "children": []};
-  for (var i = 0; i < csv.length; i++) {
-    var sequence = csv[i][0];
-    var size = +csv[i][2];
-    if (isNaN(size)) { // e.g. if this is a header row
-      continue;
-    }
-    
-
-    var parts;
-    if (sequence != "Belgium-Luxembourg")
-      parts = sequence.split("-");
-    var currentNode = root;
-    for (var j = 0; j < parts.length; j++) {
-      var children = currentNode["children"];
-      var nodeName = parts[j];
-      var childNode;
-      if (j + 1 < parts.length) {
-        // Not yet at the end of the sequence; move down the tree.
-    	  var foundChild = false;
- 	      for (var k = 0; k < children.length; k++) {
- 	        if (children[k]["name"] == nodeName) {
- 	          childNode = children[k];
- 	          foundChild = true;
- 	          break;
- 	        }
- 	      }
-        // If we don't already have a child node for this branch, create it.
-   	    if (!foundChild) {
-  	       childNode = {"name": nodeName, "children": []};
-  	       children.push(childNode);
-  	     }
- 	       currentNode = childNode;
-      }
-      else 
-      {
- 	        // Reached the end of the sequence; create a leaf node.
- 	        childNode = {"name": nodeName, "size": size};
- 	        children.push(childNode);
-      }
-    }
-    
-  }
-  console.log("root",root);
-  return root;
-};

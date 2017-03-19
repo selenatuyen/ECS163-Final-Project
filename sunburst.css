@@ -1,55 +1,39 @@
+html {
+  font-family: 'Gotham';
+  color: #444;
+  margin: 0px;
+  padding: 0px;
+  width: 100%;
+  height: 100%;
+}
+
 body {
-  font-family: 'Open Sans', sans-serif;
-  font-size: 12px;
-  font-weight: 400;
-  background-color: #fff;
-  width: 960px;
-  height: 700px;
-  margin-top: 10px;
+  margin: 0px;
+  padding: 0px;
+  width: 100%;
+  height: 100%;
 }
 
-#main {
-  float: left;
-  width: 750px;
+.header {
+  height: 150px;
 }
 
-#sidebar {
-  float: right;
-  width: 100px;
-}
-
-#sequence {
-  width: 600px;
-  height: 70px;
-}
-
-#legend {
-  padding: 10px 0 0 3px;
-}
-
-#sequence text, #legend text {
-  font-weight: 600;
-  fill: #fff;
-}
-
-#chart {
-  position: relative;
-}
-
-#chart path {
-  stroke: #fff;
-}
-
-#explanation {
-  position: absolute;
-  top: 260px;
-  left: 305px;
-  width: 140px;
+h1 {
+  margin: 0px;
+  padding-top: 20px;
   text-align: center;
-  color: #666;
-  z-index: -1;
 }
 
-#percentage {
-  font-size: 2.5em;
+.chart {
+  text-align: center;
+  position: absolute;
+  top: 150px;
+  left: 100px;
+  bottom: 100px;
+  right: 100px;
+}
+
+path {
+  stroke: #fff;
+  fill-rule: evenodd;
 }

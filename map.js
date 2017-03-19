@@ -37,7 +37,8 @@ var arccolor = {
     "EU": "#F7986C",
     "NA": "#80639B",
     "OC": "#5DBFCC",
-    "SA": "#9BEFB6"
+    "SA": "#9BEFB6",
+    "ALL": "#808080"
 };
 
 
@@ -68,12 +69,27 @@ function ready(error, world) {
                 .style("cursor", "pointer");
         });
 
+    d3.selectAll('.contButton')
+        .each(function() {
+            var id = d3.select(this).attr("id");
+            d3.select(this)
+                .style("background", function(x) {
+                    return arccolor[id];
+                });
+        });
+
     drawArcs("ALL"); // show all continents at beginning
 }
 
 function drawArcs(continent) {
     svg.selectAll(".arcs").remove();
     svg.selectAll(".circle").remove();
+
+    d3.selectAll('.contButton')
+        .classed("selectedCont", false);
+
+    d3.select("#" + continent)
+        .classed("selectedCont", true);
 
     var arcs = svg.append("g")
         .attr("class", "arcs");

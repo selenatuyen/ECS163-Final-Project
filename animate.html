@@ -3,11 +3,19 @@
 	<head>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<script src="d3.v4.min.js"></script>
-   		<link href="anStyle.css" rel="stylesheet" type="text/css">
+   		<!-- <link href="anStyle.css" rel="stylesheet" type="text/css"> -->
+    	<link rel="stylesheet" href="style.css" />
+	  	<script src="lib/d3.v4.min.js"></script>
+	    <script src="lib/queue.v1.min.js"></script>
+	    <script src="lib/topojson.v1.min.js"></script>
+	    <script src="lib/d3-scale-chromatic.v1.min.js"></script>
 		<title>Animate</title>
 	</head>
 	<body>
-		<path d="M228.078028797512,269.10110393408445A159.50399078512558,159.50399078512558 0 0,1 236.65194443623426,163.11133291761828"></path>
-		<script src="animation.js"></script>
+		<div id="map"></div>
+		<div id="sidebar"></div>
+		<script src="data/country-coordinates.js"></script>
+		<script src="map.js"></script>
+		<!-- <script src="animation.js"></script> -->
 	</body>
 </html>

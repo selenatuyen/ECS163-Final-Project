@@ -79,6 +79,7 @@ function ready(error, world) {
         });
 
     drawArcs("ALL"); // show all continents at beginning
+    animate(2014);
 }
 
 function drawArcs(continent) {
@@ -197,6 +198,60 @@ function calcArc(d, sourceName, targetName, bend) {
         }
     }
 }
+
+function animate(year){
+    var jsonObjs = {
+        countries:[]
+    };
+    d3.csv("data/country-import-amount.csv", function(err, data){
+        if(err){
+            console.log(err);
+        }
+        data.forEach(function(d){
+            var cntry = d["Country"];
+            var amt = d[year];
+            var cid = "c" + d["CountryID"];
+            jsonObjs.countries.push({"cids": cid, "name": cntry, "imports": amt});
+        });
+        var svg = d3.select("svg");
+        var daPath = "path#" + jsonObjs.countries[0].cids;
+        var path = d3.select(daPath);//.attr("d");
+        console.log("daf " + path);
+        
+        var startPoint =pathStartPoint(path);
+        console.log("path start:" + startPoint);
+        
+        var marker = svg.append("circle").attr("class", "marbol");
+        marker.attr("r", 3)
+            .attr("transform", "translate(" + startPoint + ")");
+
+       transition();
+
+        function pathStartPoint(path){
+            var d = path.attr("d");
+            var dsplitted = d.split(" ");
+            return dsplitted[1].split(",");
+        }
+
+        function transition(){
+            marker.transition()
+                .duration(5500)
+                .attrTween("transform", translateAlong(path.node()))
+                .each("end", transition);
+        }
+
+        function translateAlong(path){
+            var l = path.getTotalLength();
+            return function(i){
+                return function(t){
+                    var p = path.getPointAtLength(t * l);
+                    return "translate(" + p.x + "," + p.y + ")";
+                }
+            }
+        }            
+    }); 
+}
+
 
 /*d3.json("https://d3js.org/world-110m.v1.json", function(error, world) {
 	if (error) throw error;

@@ -16,7 +16,7 @@ svg {
 div.tooltip {
   position: absolute;
   /*text-align: center;*/
-  width: 100px;
+  width: 120px;
   height: 40px;
   padding: 15px;
   font: 12px sans-serif;
@@ -42,6 +42,27 @@ div.tooltip {
 	stroke-width: 4px;
 	fill: none;
   opacity: .6;
+}
+
+
+#title {
+  position: absolute;
+  text-align: center;
+  color: white;
+  background: rgba(0,0,0,.9);
+  width: 50%;
+  height: 6%;
+  left: 0;
+  right: 0;
+  margin: auto;
+}
+
+.title {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  margin: 9px;
+  color: white;
 }
 
 .lightbox {
@@ -82,7 +103,6 @@ div.tooltip {
   width: 20%;
   height: 100%;
   background: rgba(0,0,0,.8);
-  /*opacity: .8;*/
 }
 
 #bottombar {
@@ -96,9 +116,9 @@ div.tooltip {
 
 #pie {
   color: white;
-  height: 60%;
+  height: 58%;
   width: 100%;
-  background: gray;
+  /*background: gray;*/
 }
 
 .filters {

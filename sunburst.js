@@ -18,7 +18,6 @@ chart
   .on('arcClick', chart.zoom);
 
 d3.json('data/all.json', function(error, data){chart.data(data);});
-console.log(data);
 
 function constructor(skeleton){
 
@@ -37,7 +36,7 @@ function constructor(skeleton){
   var y = d3.scaleSqrt()
     .range([0, radius]);
 
-  var color = d3.scaleOrdinal(d3.schemeCategory20);
+  var color = d3.scaleOrdinal(d3.schemeCategory20c);
 
   var core = layers.get('sunburst').append("g")
     .attr("transform", "translate(" + skeleton.getInnerWidth() / 2 + "," + (skeleton.getInnerHeight() / 2 + 10) + ")");
@@ -113,7 +112,13 @@ function constructor(skeleton){
       .style('fill', colorFn)
       .attr("d", arc)
       .append('title')
-      .text( function(d) {return d.name;});
+      .text( function(d) 
+        {
+          if(typeof d.data.value != 'undefined')
+            return d.data.name + ' = ' + d.data.value;
+          return d.data.name;
+        }
+      );
 
     path
       .attr("d", arc);

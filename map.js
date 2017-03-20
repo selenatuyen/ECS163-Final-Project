@@ -212,6 +212,13 @@ function drawArcs(continent) {
             tip.transition()
                 .duration(200)
                 .style("opacity", "0");
+        })
+        .on("click", function(d) {
+            var cid = "s" + parseInt(d.cid, 10);
+            goToAnchor(cid);
+            var call = d3.select("#" + cid)
+                .append("div").attr("id", "sunbst");
+            starburst("sunbst", importAmount[parseInt(d.cid, 10)].Country);    
         });
 
     var outerCircle = svg.append("g")
@@ -263,6 +270,13 @@ function drawArcs(continent) {
             tip.transition()
                 .duration(200)
                 .style("opacity", "0");
+        })
+        .on("click", function(d) {
+            var cid = "s" + parseInt(d.cid, 10);
+            goToAnchor(cid);
+            var call = d3.select("#" + cid)
+                .append("div").attr("id", "sunbst");
+            starburst("sunbst", importAmount[parseInt(d.cid, 10)].Country);    
         });
 
     var innerCircle = svg.append("g")

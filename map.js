@@ -34,14 +34,24 @@ var tip = d3.select("body")
     .attr("class", "tooltip")
     .style("opacity", 0);
 
+// var arccolor = {
+//     "AF": "#F9DE7C",
+//     "AS": "#D87093",
+//     "EU": "#F7986C",
+//     "NA": "#80639B",
+//     "OC": "#5DBFCC",
+//     "SA": "#9BEFB6",
+//     "ALL": "#808080"
+// };
+
 var arccolor = {
-    "AF": "#F9DE7C",
-    "AS": "#D87093",
-    "EU": "#F7986C",
-    "NA": "#80639B",
-    "OC": "#5DBFCC",
-    "SA": "#9BEFB6",
-    "ALL": "#808080"
+    "AF": "#B72828",
+    "AS": "#63ADF2",
+    "EU": "#EDC16C",
+    "NA": "#F433EB",
+    "OC": "#9733F4",
+    "SA": "#F9965C",
+    "ALL": "#8D8187"
 };
 
 
@@ -93,11 +103,11 @@ function drawMap() {
         })
         .attr("fill", function(d) { 
             if (parseInt(d.id, 10) in importAmount && (importAmount[parseInt(d.id, 10)].Continent == selectedContinent || selectedContinent == "ALL")) {
-                return "#FFFFFF"
+                return "#A7C1A6"
             } else if (d.id == 840) {
-                return "#880000";
+                return "#7FAD7C";
             } else {
-                return "#A9A9A9";
+                return "#546B84";
             }
         })
         .on("mouseover", function(d) {

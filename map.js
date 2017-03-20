@@ -445,11 +445,14 @@ function starburst(idname, country){
       .on('arcClick', chart.zoom)
       .on('arcMouseOver', chart.mouseover);
 
+    var foodData;
+
     d3.json('data/all.json', function(error, data) {
         for (var i = 0; i < data.children.length; i++) {
             if (data.children[i].name == country) {
                 for (var j = 0; j < data.children[i].children.length; j++) {
                     if (parseInt(data.children[i].children[j].name) == selectedYear) {
+                        foodData = data.children[i].children[j];
                         chart.data(data.children[i].children[j]);
                         return;
                     }
@@ -562,13 +565,14 @@ function starburst(idname, country){
           .text( function(d) 
             {
               if(typeof d.data.value != 'undefined')
-                return d.data.name + ' = ' + d.data.value;
+                return d.data.name + ' = $' + d.data.value + " million";
               return d.data.name;
             }
           );
 					
         path
           .attr("d", arc);
+
 
         var ordinal = d3.scaleOrdinal(d3.schemeCategory20c)
         .domain(["Coffee Tea", "Dairy", "Fish", "Fruits", "Grains", "Meats", "Nuts", "Other", "Sweets", "Vegetables", "Vegoils"])
@@ -581,6 +585,19 @@ function starburst(idname, country){
             .text("Food Types of " + country)
             .attr("font-size", "1.5em")
             .attr("transform", "translate(500,40)");
+
+        var hasData = false;
+        for (var i = 0; i < foodData.children.length; i++) {
+            if (foodData.children[i].children.length > 0)
+                hasData = true;
+        }
+
+        if (!hasData) {
+            svg.select("svg").append("text")
+                .text("No data available")
+                .attr("font-size", "20px")
+                .attr("transform", "translate(165,230)")
+        }
 
         var legendOrdinal = d3.legendColor()
          .scale(ordinal);

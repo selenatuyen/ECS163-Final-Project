@@ -4,7 +4,7 @@ var svg2 = d3.select("#pie").append("svg")
 	width2 = parseInt(svg2.style("width")),
 	height2 = parseInt(svg2.style("height")),
 	radius = Math.min(width2, height2) / 2,
-	g = svg2.append("g").attr("class","slices").attr("transform", "translate(" + width2 / 2 + "," + height2 / 3 + ")");
+	g = svg2.append("g").attr("class","slices").attr("transform", "translate(" + width2 / 2 + "," + height2 / 2.5 + ")");
 
 
 var legColorSize = radius * 0.05,
@@ -42,7 +42,36 @@ function pieChart() {
 			.enter().append("path")
 			.attr("class", "slice")
 			.attr("d", path2)
-			.attr("fill", function(d) { return color(d.data.Type); });
+			.attr("fill", function(d) { return color(d.data.Type); })
+			.on("mouseover", function(d) {
+				animPath(d3.select(this), 1);
+				console.log(d);
+				d3.select(".donut-type")
+					.html(d.data.Type);
+				d3.select(".donut-value")
+					.html(d.data[selectedYear] + " MT");
+			})
+			.on("mouseout", function() {
+				animPath(d3.select(this), 0);
+			});
+
+		svg2.append("text")
+			.attr("text-anchor", "middle")
+			.attr("x", width2/2)
+			.attr("y", height2/2 - 40)
+			.attr("dy", "0em")
+			.attr("class", "donut-type")
+			.style("font-size", "12px")
+			.style("fill", "white");
+
+		svg2.append("text")
+			.attr("text-anchor", "middle")
+			.attr("x", width2/2)
+			.attr("y", height2/2 - 40)
+			.attr("dy", "1.5em")
+			.attr("class", "donut-value")
+			.style("font-size", "12px")
+			.style("fill", "white");
 
 		var legend = svg2.selectAll(".legend")
 			.data(color.domain())
@@ -53,8 +82,15 @@ function pieChart() {
 				var height = legColorSize + legOffset;
 				var offset = height * color.domain().length / 2;
 				var horz = -3 * legColorSize;
-				var vert = i * height - offset;
-				return "translate(" + horz * -6 + "," + (vert + 230) + ")";
+
+				if (i < 8) { // first column
+					var vert = i * height - offset;
+					return "translate(" + horz * -4 + "," + (vert + 370) + ")";
+				} else {
+					var vert = (i%8) * height - offset;
+					return "translate(" + horz * -8 + "," + (vert + 370) + ")";
+				}
+				
 			});
 
 		legend.append("rect")
@@ -67,8 +103,30 @@ function pieChart() {
 			.attr("font-size", "10px")
 			.attr("x", legColorSize / 2 + legOffset)
 			.attr("y", legColorSize / 2 - legOffset + 5)
+			.style("fill", "white")
 			.text(function(d) { return d; });
 	});
+}
+
+function animPath(path, dir) {
+	switch(dir) {
+		case 0:
+			path.transition()
+				.duration(300)
+				.ease(d3.easeLinear)
+				.attr("d", d3.arc()
+					.innerRadius(radius - 10)
+					.outerRadius(radius - 90));
+			break;
+		case 1:
+			path.transition()
+				.duration(300)
+				.ease(d3.easeLinear)
+				.attr("d", d3.arc()
+					.innerRadius((radius - 10) * 1.08)
+					.outerRadius(radius - 90));
+			break;
+	}
 }
 
 function updatePie(yr) {

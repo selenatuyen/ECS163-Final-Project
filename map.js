@@ -416,10 +416,7 @@ function starburst(idname, country){
     };
 
     var CUSTOM_EVENTS = [
-      'arcClick',
-      'arcMouseOver',
-      'arcMouseMove',
-      'arcMouseOut'
+      'arcClick'
     ];
 
     var Sunburst = d3Kit.factory.createChart(DEFAULT_OPTIONS, CUSTOM_EVENTS, constructor);
@@ -514,7 +511,7 @@ function starburst(idname, country){
 
       function colorFn(d){
         if(d.depth===0) return '#ccc';
-        return color((d.children ? d : d.parent).data.name);
+        return color(d.data.name);
       }
 
       var visualize = d3Kit.helper.debounce(function(){
@@ -543,7 +540,7 @@ function starburst(idname, country){
               return d.data.name;
             }
           );
-
+					
         path
           .attr("d", arc);
 
@@ -558,6 +555,11 @@ function starburst(idname, country){
             .attrTween("d", arcTweenZoom(target));
       }
 
+      function mouseover(d)
+      {
+        svg.append("text").text(function(d){return d.data.value;});
+      }
+
       function clear(){
         core.call(d3Kit.helper.removeAllChildren);
         return skeleton;
@@ -568,8 +570,8 @@ function starburst(idname, country){
 
       return skeleton.mixin({
         clear: clear,
-        visualize: visualize,
-        zoom: zoom
+        visualize: visualize
+        //zoom: zoom
       });
     }
 }

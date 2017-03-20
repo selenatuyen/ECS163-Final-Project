@@ -11,7 +11,7 @@ var CUSTOM_EVENTS = [
 
 var Sunburst = d3Kit.factory.createChart(DEFAULT_OPTIONS, CUSTOM_EVENTS, constructor);
 
-var chart = new Sunburst('');
+var chart = new Sunburst('.chart');
 
 chart
   .autoResize('both')

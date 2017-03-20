@@ -245,11 +245,7 @@ function animate(year){
         function pathStartPoint(path){
             var d = path.attr("d");
             var dsplitted = d.split(" ");
-            // console.log(dsplitted);
-            var splitss = dsplitted[3].split(",");
-            // console.log(splitss);
-            return splitss;
-            // return dsplitted[1].split(",");
+            return dsplitted[1].split(",");
         }
 
         function transitionAll(marker, path, rt){
@@ -286,7 +282,7 @@ makeLightbox(){
     var at = d3.select("body")
             .append("a")
             .attr('href', function(i, str){
-                                
+
             });
 }
 

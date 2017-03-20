@@ -57,6 +57,7 @@ function ready(error, world, csv) {
     worldjson = world;
 
     csv.forEach(function(d) {
+        makeLightbox(d["Country"]);
         importAmount[d.CountryID] = {};
         for (var key in d) {
             if (key != "CountryID")
@@ -78,7 +79,7 @@ function ready(error, world, csv) {
 
 function drawMap() {
     svg.selectAll(".country").remove();
-
+ 
     svg.selectAll("append")
         .data(topojson.feature(worldjson, worldjson.objects.countries).features)
         .enter()
@@ -119,8 +120,14 @@ function drawMap() {
                 .style("opacity", "0");
         })
         .on("click", function(d) {
-            showPopup();
-        });
+            goToAnchor(importAmount[parseInt(d.id, 10)].Country);
+        });    
+}
+
+function goToAnchor(country) {
+  var loc = document.location.toString().split('#')[0];
+  document.location = loc + '#' + country;
+  return false;
 }
 
 function drawArcs(continent) {
@@ -330,19 +337,18 @@ function animateMarkers(year){
             .on("end", partial(transitionAll, marker, path, rt));
     }
 
-        function translateAlong(path){
-            var l = path.getTotalLength();
-                // console.log(l);
-            return function(i){
-                return function(t){
-                    var p = path.getPointAtLength(t* l);
-                    // console.log("l:" + l + " p:" + p.x + "," + p.y);
-                    return "translate(" + (p.x) + "," + (p.y) + ")";
-                }
+    function translateAlong(path){
+        var l = path.getTotalLength();
+            // console.log(l);
+        return function(i){
+            return function(t){
+                var p = path.getPointAtLength(t* l);
+                // console.log("l:" + l + " p:" + p.x + "," + p.y);
+                return "translate(" + (p.x) + "," + (p.y) + ")";
             }
         }
-    }  
-
+    }
+    
     function partial(func){
         var args = Array.prototype.slice.call(arguments, 1);
         return function(){
@@ -352,12 +358,12 @@ function animateMarkers(year){
     }          
 }
 
-makeLightbox(){
+function makeLightbox(country){
     var at = d3.select("body")
-            .append("a")
-            .attr('href', function(i, str){
-
-            });
+        .append("a")
+        .attr("class", "lightbox")
+        .attr('href', "#_")
+        .attr('id', country);   
 }
 
 

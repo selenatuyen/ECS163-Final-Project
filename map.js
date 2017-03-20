@@ -34,14 +34,24 @@ var tip = d3.select("body")
     .attr("class", "tooltip")
     .style("opacity", 0);
 
+// var arccolor = {
+//     "AF": "#F9DE7C",
+//     "AS": "#D87093",
+//     "EU": "#F7986C",
+//     "NA": "#80639B",
+//     "OC": "#5DBFCC",
+//     "SA": "#9BEFB6",
+//     "ALL": "#808080"
+// };
+
 var arccolor = {
-    "AF": "#F9DE7C",
-    "AS": "#D87093",
-    "EU": "#F7986C",
-    "NA": "#80639B",
-    "OC": "#5DBFCC",
-    "SA": "#9BEFB6",
-    "ALL": "#808080"
+    "AF": "#81F495",
+    "AS": "#63ADF2",
+    "EU": "#EDC16C",
+    "NA": "#A447B2",
+    "OC": "#F44985",
+    "SA": "#F9965C",
+    "ALL": "#8D8187"
 };
 
 

@@ -20,7 +20,7 @@ var color = d3.scaleThreshold()
     .domain([100, 1000, 2500, 5000, 10000, 15000, 20000])
     .range(d3.schemeBlues[8]);
 
-var path = d3.geoPath();
+// var path = d3.geoPath();
 
 var projection = d3.geoMercator()
     .scale(190)
@@ -126,8 +126,7 @@ function drawMap() {
             goToAnchor(cid);
             var call = d3.select("#" + cid)
                 .append("div").attr("id", "sunbst");
-            starburst("sunbst");    
-            // call.on('click', function(){rmSunburst(cid);});
+            starburst("sunbst", importAmount[parseInt(d.id, 10)].Country);    
         });    
 }
 
@@ -401,7 +400,7 @@ function rmSunburst(cid){
     var att = d3.select("div#sunbst").remove();
 }
 
-function starburst(idname){
+function starburst(idname, country){
     var DEFAULT_OPTIONS = {
       margin: {top: 10, right: 10, bottom: 10, left: 10}
     };
@@ -421,7 +420,18 @@ function starburst(idname){
       .autoResize('both')
       .on('arcClick', chart.zoom);
 
-    d3.json('data/all.json', function(error, data){chart.data(data);});
+    d3.json('data/all.json', function(error, data) {
+        for (var i = 0; i < data.children.length; i++) {
+            if (data.children[i].name == country) {
+                for (var j = 0; j < data.children[i].children.length; j++) {
+                    if (parseInt(data.children[i].children[j].name) == selectedYear) {
+                        chart.data(data.children[i].children[j]);
+                        return;
+                    }
+                }
+            }
+        }
+    });
 
     function constructor(skeleton){
 

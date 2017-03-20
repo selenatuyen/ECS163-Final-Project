@@ -426,7 +426,7 @@ function rmSunburst(cid){
 
 function starburst(idname, country){
     var DEFAULT_OPTIONS = {
-      margin: {top: 10, right: 10, bottom: 10, left: 10}
+      margin: {top: 10, right: 10, bottom: 30, left: 10}
     };
 
     var CUSTOM_EVENTS = [

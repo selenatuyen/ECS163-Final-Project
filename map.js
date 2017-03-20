@@ -8,7 +8,7 @@ var svg = d3.select("#map").append("svg")
     .attr("class", "worldmap");
 
 svg.append("rect")
-    .attr("width", "100%")
+    .attr("width", "80%")
     .attr("height", "100%")
     .attr("fill", "#455772");
 
@@ -98,17 +98,17 @@ function drawMap() {
             }
         })
         .on("mouseover", function(d) {
-            if (parseInt(d.id, 10) in importAmount) {
+            if (parseInt(d.id, 10) in importAmount && (importAmount[parseInt(d.id, 10)].Continent == selectedContinent || selectedContinent == "ALL")) {
                 d3.select(this).style("cursor", "pointer");
-            d3.select("#c" + parseInt(d.id, 10))
-                .style("opacity", 1);
-            tip.transition()
-                .duration(200)
-                .style("opacity", .9)
-                .style("visibility", "visible");
-            tip.html(selectedYear + "</br/>" + importAmount[parseInt(d.id, 10)].Country + "<br/>$" + importAmount[parseInt(d.id, 10)][selectedYear] + " million")
-                .style("left", (d3.event.pageX - 30) + "px")
-                .style("top", (d3.event.pageY - 100) + "px");
+                d3.select("#c" + parseInt(d.id, 10))
+                    .style("opacity", 1);
+                tip.transition()
+                    .duration(200)
+                    .style("opacity", .9)
+                    .style("visibility", "visible");
+                tip.html(selectedYear + "</br/>" + importAmount[parseInt(d.id, 10)].Country + "<br/>$" + importAmount[parseInt(d.id, 10)][selectedYear] + " million")
+                    .style("left", (d3.event.pageX - 30) + "px")
+                    .style("top", (d3.event.pageY - 100) + "px");
             }
         })
         .on("mouseout", function(d) {
@@ -160,9 +160,9 @@ function drawArcs(continent) {
             return totalLength + " " + totalLength;
         })
         .attr("stroke-dashoffset", function(d) {
-            var totalLength = -this.getTotalLength();
-            if (d.continent == "NA")
-                totalLength = totalLength * -1;
+            var totalLength = this.getTotalLength();
+            // if (d.continent == "NA")
+            //     totalLength = totalLength * -1;
             return totalLength;
         })
         .transition()
@@ -174,9 +174,21 @@ function drawArcs(continent) {
         .on("mouseover", function(d) {
             d3.select(this).style("cursor", "pointer")
                 .style("opacity", 1);
+            d3.select("#c" + parseInt(d.id, 10))
+                .style("opacity", 1);
+            tip.transition()
+                .duration(200)
+                .style("opacity", .9)
+                .style("visibility", "visible");
+            tip.html(selectedYear + "</br/>" + importAmount[parseInt(d.cid, 10)].Country + "<br/>$" + importAmount[parseInt(d.cid, 10)][selectedYear] + " million")
+                .style("left", (d3.event.pageX - 30) + "px")
+                .style("top", (d3.event.pageY - 100) + "px");
         })
         .on("mouseout", function(d) {
             d3.select(this).style("opacity", .6);
+            tip.transition()
+                .duration(200)
+                .style("opacity", "0");
         });
 
     var outerCircle = svg.append("g")
@@ -208,6 +220,14 @@ function drawArcs(continent) {
 
             d3.select('#c' + d.cid)
                 .style("opacity", 1);
+
+            tip.transition()
+                .duration(200)
+                .style("opacity", .9)
+                .style("visibility", "visible");
+            tip.html(selectedYear + "</br/>" + importAmount[parseInt(d.cid, 10)].Country + "<br/>$" + importAmount[parseInt(d.cid, 10)][selectedYear] + " million")
+                .style("left", (d3.event.pageX - 30) + "px")
+                .style("top", (d3.event.pageY - 100) + "px");
         })
         .on("mouseout", function(d) {
             d3.select(this)
@@ -216,6 +236,10 @@ function drawArcs(continent) {
 
             d3.select('#c' + d.cid)
                 .style("opacity", .6);
+
+            tip.transition()
+                .duration(200)
+                .style("opacity", "0");
         });
 
     var innerCircle = svg.append("g")
@@ -259,11 +283,11 @@ function calcArc(d, sourceName, targetName, bend) {
             dr = Math.sqrt(dx*dx + dy*dy)*bend;
 
         var isWest = (sourceX - targetX) < 0;
-        if (isWest) {
+        // if (!isWest) {
             return "M" + sourceX + "," + sourceY + "A" + dr + "," + dr + " 0 0,1 " + targetX + "," + targetY;
-        } else {
-            return "M" + targetX + "," + targetY + "A" + dr + "," + dr + " 0 0,1 " + sourceX + "," + sourceY;
-        }
+        // } else {
+            // return "M" + targetX + "," + targetY + "A" + dr + "," + dr + " 0 0,1 " + sourceX + "," + sourceY;
+        // }
     }
 }
 
@@ -302,19 +326,19 @@ function animateMarkers(year){
     });
 
 
-    for(var i = 0; i < jsonObjs.countries.length; i++){
-        var rt = jsonObjs.countries[i].rate; 
-        var daPath = "path#" + jsonObjs.countries[i].cids;
-        var path = d3.select(daPath);//.attr("d");
+    // for(var i = 0; i < jsonObjs.countries.length; i++){
+    //     var rt = jsonObjs.countries[i].rate; 
+    //     var daPath = "path#" + jsonObjs.countries[i].cids;
+    //     var path = d3.select(daPath);//.attr("d");
 
-        var startPoint =pathStartPoint(path);
+    //     var startPoint = pathStartPoint(path);
         
-        var marker = svg.append("circle").attr("class", "marbol");
-        marker.attr("r", 3)
-            .attr("transform", "translate(" + startPoint + ")");
+    //     var marker = svg.append("circle").attr("class", "marbol");
+    //     marker.attr("r", 3)
+    //         .attr("transform", "translate(" + startPoint + ")");
 
-        transitionAll(marker, path, rt);
-    }
+    //     transitionAll(marker, path, rt);
+    // }
 
     function pathStartPoint(path){
         var d = path.attr("d");
@@ -334,6 +358,7 @@ function animateMarkers(year){
         return function(i){
             return function(t){
                 var p = path.getPointAtLength(t* l);
+                //console.log(t);
                 return "translate(" + p.x + "," + p.y + ")";
             }
         }

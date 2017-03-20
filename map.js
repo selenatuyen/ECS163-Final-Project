@@ -406,7 +406,10 @@ function starburst(idname, country){
     };
 
     var CUSTOM_EVENTS = [
-      'arcClick'
+      'arcClick',
+      'arcMouseOver',
+      'arcMouseMove',
+      'arcMouseOut'
     ];
 
     var Sunburst = d3Kit.factory.createChart(DEFAULT_OPTIONS, CUSTOM_EVENTS, constructor);
@@ -415,7 +418,8 @@ function starburst(idname, country){
 
     chart
       .autoResize('both')
-      .on('arcClick', chart.zoom);
+      .on('arcClick', chart.zoom)
+      .on('arcMouseOver', chart.mouseover);
 
     d3.json('data/all.json', function(error, data) {
         for (var i = 0; i < data.children.length; i++) {
@@ -458,7 +462,8 @@ function starburst(idname, country){
         .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x0))); })
         .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x1))); })
         .innerRadius(function(d) { return Math.max(0, y(d.y0)); })
-        .outerRadius(function(d) { return Math.max(0, y(d.y1)); });
+        .outerRadius(function(d) { return Math.max(0, y(d.y1)); })
+        .padAngle(0.002);
 
       // Keep track of the node that is currently being displayed as the root.
       var node;
@@ -501,14 +506,15 @@ function starburst(idname, country){
 
       function colorFn(d){
         if(d.depth===0) return '#ccc';
-        return color(d.data.name);
+        // return color(d.data.name);
+        return color((d.children ? d : d.parent).data.name);
       }
 
       var visualize = d3Kit.helper.debounce(function(){
         if(!skeleton.hasData()) return skeleton;
 
         var root = d3.hierarchy(skeleton.data());
-        root.sum(function(d) { return 1; });
+        root.sum(function(d) { return d.value; });
         node = root;
 
         radius = Math.min(skeleton.getInnerWidth(), skeleton.getInnerHeight()) / 2;
@@ -521,6 +527,12 @@ function starburst(idname, country){
         path.enter().append("path")
           .call(d3Kit.helper.bindMouseEventsToDispatcher, dispatch, 'arc')
           .style('fill', colorFn)
+          .style('opacity', function(d) {
+            if (d.children) 
+                return 1;
+            else
+                return .7;
+          })
           .attr("d", arc)
           .append('title')
           .text( function(d) 
@@ -547,7 +559,7 @@ function starburst(idname, country){
 
       function mouseover(d)
       {
-        svg.append("text").text(function(d){return d.data.value;});
+        svg.append("text").text(function(d){console.log("dipslaying value"); return d.data.value;});
       }
 
       function clear(){

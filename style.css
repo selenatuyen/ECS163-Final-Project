@@ -74,6 +74,7 @@ div.tooltip {
   height:100%;
   top:0;
   left:0;
+  cursor: default;
   background: rgba(0,0,0,0.8);
 }
 

@@ -232,7 +232,7 @@ function animate(year){
             // console.log("daf " + path);
             
             var startPoint =pathStartPoint(path);
-            console.log("path start:" + startPoint);
+            // console.log("path start:" + startPoint);
             
             var marker = svg.append("circle").attr("class", "marbol");
             marker.attr("r", 3)
@@ -245,7 +245,11 @@ function animate(year){
         function pathStartPoint(path){
             var d = path.attr("d");
             var dsplitted = d.split(" ");
-            return dsplitted[1].split(",");
+            // console.log(dsplitted);
+            var splitss = dsplitted[3].split(",");
+            // console.log(splitss);
+            return splitss;
+            // return dsplitted[1].split(",");
         }
 
         function transitionAll(marker, path, rt){
@@ -258,10 +262,12 @@ function animate(year){
 
         function translateAlong(path){
             var l = path.getTotalLength();
+                // console.log(l);
             return function(i){
                 return function(t){
                     var p = path.getPointAtLength(t* l);
-                    return "translate(" + p.x + "," + p.y + ")";
+                    // console.log("l:" + l + " p:" + p.x + "," + p.y);
+                    return "translate(" + (p.x) + "," + (p.y) + ")";
                 }
             }
         }  
@@ -274,6 +280,14 @@ function animate(year){
             };
         }          
     }); 
+}
+
+makeLightbox(){
+    var at = d3.select("body")
+            .append("a")
+            .attr('href', function(i, str){
+                                
+            });
 }
 
 

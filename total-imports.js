@@ -1,18 +1,10 @@
-// var sel = document.getElementById("years");
-// for (var i = 1999; i < 2015; i++) {
-// 	var option = document.createElement("option");
-// 	option.text = i.toString();
-// 	option.value = i.toString();
-// 	sel.add(option);
-// }
-
 var svg2 = d3.select("#pie").append("svg")
 			.attr("width", d3.select("#pie").style("width"))
 			.attr("height", d3.select("#pie").style("height")),
 	width2 = parseInt(svg2.style("width")),
 	height2 = parseInt(svg2.style("height")),
 	radius = Math.min(width2, height2) / 2,
-	g = svg2.append("g").attr("class","slices").attr("transform", "translate(" + width2 / 2 + "," + (height2 / 2 - 15) + ")");
+	g = svg2.append("g").attr("class","slices").attr("transform", "translate(" + width2 / 2 + "," + height2 / 3 + ")");
 
 
 var legColorSize = radius * 0.05,
@@ -23,7 +15,7 @@ var pie = d3.pie()
 	.value(function(d) { return d.curYear; });
 
 var keepData = null,
-	arc = null;
+	arcPie = null;
 
 var path2 = d3.arc()
 	.outerRadius(radius - 10)
@@ -45,7 +37,7 @@ function pieChart() {
 
 		keepData = data;
 
-		arc = g.selectAll(".arc")
+		arcPie = g.selectAll(".arc")
 			.data(pie(data))
 			.enter().append("path")
 			.attr("class", "slice")
@@ -62,32 +54,30 @@ function pieChart() {
 				var offset = height * color.domain().length / 2;
 				var horz = -3 * legColorSize;
 				var vert = i * height - offset;
-				console.log(horz*-22 + " " + vert+250);
-				// return "translate(" + horz*-22 + "," + (vert + 250) + ")";
-				return "translate(0,0)";
+				return "translate(" + horz * -6 + "," + (vert + 230) + ")";
 			});
 
 		legend.append("rect")
-			.attr("width", legColorSize)
-			.attr("height", legColorSize)
+			.attr("width", legColorSize / 1.5)
+			.attr("height", legColorSize / 1.5)
 			.style("fill", color)
 			.style("stroke", color);
 
 		legend.append("text")
-			.attr("x", legColorSize + legOffset)
-			.attr("y", legColorSize - legOffset)
+			.attr("font-size", "10px")
+			.attr("x", legColorSize / 2 + legOffset)
+			.attr("y", legColorSize / 2 - legOffset + 5)
 			.text(function(d) { return d; });
 	});
 }
 
-function updatePie() {
-	//var yr = document.getElementById("years").value;
-	d3.select(".title").text(selectedYear + " Food Types");
+function updatePie(yr) {
+	console.log(yr);
+	d3.select(".title").text(yr + " Food Types");
 
-	pie.value(function(d) { return d[selectedYear]; });
-	var newarc = arc.data(pie(keepData))
+	pie.value(function(d) { return d[yr]; });
+	var newarc = arcPie.data(pie(keepData))
 		.transition()
-		.ease(d3.easeElastic)
 		.duration(2000)
 		.attr("d", path2);
 }

@@ -571,13 +571,16 @@ function starburst(idname, country){
           .attr("d", arc);
 
         var ordinal = d3.scaleOrdinal(d3.schemeCategory20c)
-        .domain(["coffeetea", "dairy", "fish", "fruits", "grains", "meats", "nuts", "other", "sweets", "vegetables", "vegoils"])
+        .domain(["Coffee Tea", "Dairy", "Fish", "Fruits", "Grains", "Meats", "Nuts", "Other", "Sweets", "Vegetables", "Vegoils"])
 
-        var svg = d3.select("svg");
-
-         svg.append("svg")
+        var svg = d3.select("div#sunbst");
+         svg.select("svg").append("g")
           .attr("class", "legendOrdinal")
-          .attr("transform", "translate(600,20)");
+          .attr("transform", "translate(500,60)");
+           svg.select("svg").append("text")
+            .text("Food Types of " + country)
+            .attr("font-size", "1.5em")
+            .attr("transform", "translate(500,40)");
 
         var legendOrdinal = d3.legendColor()
          .scale(ordinal);

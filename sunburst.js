@@ -126,6 +126,28 @@ function constructor(skeleton){
     return skeleton;
   }, 10);
 
+  var color = d3.scaleOrdinal(d3.schemeCategory20c);
+
+  function colorFn(d){
+    if(d.depth===0) return '#ccc';
+    return color((d.children ? d : d.parent).data.name);
+  }
+
+  var ordinal = d3.scaleOrdinal()
+    .domain(["coffeetea", "dairy", "fish", "fruits", "grains", "meats", "nuts", "other", "sweets", "vegetables", "vegoils"])
+;
+  var svg = d3.select("svg");
+
+  svg.append("g")
+    .attr("class", "legendOrdinal")
+    .attr("transform", "translate(600,20)");
+
+  var legendOrdinal = d3.legendColor()
+  .scale(ordinal);
+
+  svg.select(".legendOrdinal")
+    .call(legendOrdinal);
+
   function zoom(target, i) {
     node = target;
     core.selectAll("path")

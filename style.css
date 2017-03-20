@@ -61,6 +61,19 @@ div.tooltip {
   display:block;
 }
 
+#sunbst{
+  background-color: #fff;
+  text-align: center;
+  position: absolute;
+  top: 100px;
+  left: 100px;
+  bottom: 100px;
+  right: 100px;
+  width: 60%;
+  height: 70%;
+  margin-top: 2%;
+}
+
 #sidebar {
   position: absolute;
   top: 0;

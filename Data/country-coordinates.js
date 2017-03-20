@@ -77,7 +77,7 @@ var countrycoords = [
         continent: "OC",
         cid: 554
     }, {
-        source: [52.5, 5.75], // netherlands
+        source: [5.75, 52.5], // netherlands
         target: [-98.585522, 39.8333333],
         continent: "EU",
         cid: 528
@@ -222,19 +222,19 @@ var countrycoords = [
         continent: "AF",
         cid: 710
     }, {
-        source: [105, 35], // greece
+        source: [22, 39], // greece
         target: [-98.585522, 39.8333333],
         continent: "EU",
         cid: 300
     }, {
-        source: [22, 39], // uruguay
+        source: [-56, -33], // uruguay
         target: [-98.585522, 39.8333333],
         continent: "SA",
         cid: 858
     }, {
         source: [-5, 32], // morocco
         target: [-98.585522, 39.8333333],
-        continent: "SA",
+        continent: "AF",
         cid: 504
     }, {
         source: [-2, 8], // ghana
@@ -269,7 +269,7 @@ var countrycoords = [
     }, {
         source: [-8, 39.5], // portugal
         target: [-98.585522, 39.8333333],
-        continent: "SA",
+        continent: "EU",
         cid: 620
     }, {
         source: [-57.996, -22.9933], // paraguay

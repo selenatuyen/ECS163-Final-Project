@@ -15,15 +15,16 @@ svg {
 
 div.tooltip {
   position: absolute;
-  text-align: center;
-  width: 150px;
-  height: 58px;
-  padding: 2px;
+  /*text-align: center;*/
+  width: 100px;
+  height: 40px;
+  padding: 15px;
   font: 12px sans-serif;
-  color: black;
-  background: lightblue;
-  border: 0px;
-  border-radius: 5px;
+  color: white;
+  background: #000000;
+  opacity: .6;
+  border: solid 1px white;
+  border-radius: 2px;
   pointer-events: none;
 }
 
@@ -39,9 +40,8 @@ div.tooltip {
 
 .arcs path {
 	stroke-width: 4px;
-	pointer-events: none;
 	fill: none;
-  opacity: .5;
+  opacity: .6;
 }
 
 
@@ -52,8 +52,8 @@ div.tooltip {
   bottom: 0;
   width: 20%;
   height: 100%;
-  background: #000000;
-  opacity: .8;
+  background: rgba(0,0,0,.8);
+  /*opacity: .8;*/
 }
 
 #bottombar {
@@ -62,8 +62,7 @@ div.tooltip {
   left: 0;
   height: 8%;
   width: 80%;
-  background: #000000;
-  opacity: .8;
+  background: rgba(0,0,0,.8);
 }
 
 #pie {
@@ -93,18 +92,32 @@ div.tooltip {
   border: none;
   color: black;
   cursor: pointer;
+  opacity: .9;
+}
+
+.contButton:hover {
+  opacity: 1;
 }
 
 .selectedCont {
   border: 2px solid white;
+  opacity: 1;
 }
 
 .years {
   text-align: center;
-  vertical-align: middle;
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .yearButton {
   margin: 5px;
   padding: 5px;
+  cursor: pointer;
+}
+
+.selectedYear {
+  border: 2px solid white;
+  background: blue;
 }

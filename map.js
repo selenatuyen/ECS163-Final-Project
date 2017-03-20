@@ -1,35 +1,38 @@
 var width = 960,
-	height = 500;
+    height = 500;
 
 var svg = d3.select("#map").append("svg")
-	.attr("width", width)
-	.attr("height", height)
-	.append("g")
-	.attr("class", "worldmap");
+    .attr("width", width)
+    .attr("height", height)
+    .append("g")
+    .attr("class", "worldmap");
 
 svg.append("rect")
-	.attr("width", "100%")
-	.attr("height", "100%")
-	.attr("fill", "#455772");
+    .attr("width", "100%")
+    .attr("height", "100%")
+    .attr("fill", "#455772");
 
 var importAmount = {};
+var importData, selectedContinent = "ALL", selectedYear = 2014;
+var worldjson;
 
 var color = d3.scaleThreshold()
-	.domain([100, 1000, 2500, 5000, 10000, 15000, 20000])
-	.range(d3.schemeBlues[8]);
+    .domain([100, 1000, 2500, 5000, 10000, 15000, 20000])
+    .range(d3.schemeBlues[8]);
 
 var path = d3.geoPath();
 
 var projection = d3.geoMercator()
-	.scale(190)
-	.translate([width / 2 + 20, height / 1.5 + 80]);
+    .scale(190)
+    .translate([width / 2 + 20, height / 1.5 + 80]);
 
 var path = d3.geoPath().projection(projection);
 
+
 var tip = d3.select("body")
-	.append("div")
-	.attr("class", "tooltip")
-	.style("opacity", 0);
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
 
 var arccolor = {
     "AF": "#F9DE7C",
@@ -43,43 +46,81 @@ var arccolor = {
 
 
 d3.queue()
-	.defer(d3.json, "https://d3js.org/world-110m.v1.json")
-	.defer(d3.csv, "data/country-import-amount.csv", function(d) { importAmount[parseInt(d.CountryID)] = +d[2014]; })
-	.await(ready);
+    .defer(d3.json, "https://d3js.org/world-110m.v1.json")
+    .defer(d3.csv, "Data/country-import-amount.csv")//, function(d) { importAmount[parseInt(d.CountryID)] = +d[2014]; })
+    .await(ready);
 
-function ready(error, world) {
-	if (error) throw error;
+function ready(error, world, csv) {
+    if (error) throw error;
 
-	svg.selectAll("append")
-		.data(topojson.feature(world, world.objects.countries).features)
-		.enter()
-		.append("path")
-		.attr("d", path)
-		.attr("class", "country")
-		.attr("fill", function(d) { 
-			if (d.id in importAmount) {
+    importData = csv;
+    worldjson = world;
+
+    csv.forEach(function(d) {
+        importAmount[d.CountryID] = {};
+        for (var key in d) {
+            if (key != "CountryID")
+                importAmount[d.CountryID][key] = d[key];
+        }
+    });
+
+    d3.selectAll('.contButton').each(function() {
+        var id = d3.select(this).attr("id");
+        d3.select(this).style("background", function(x) {
+            return arccolor[id];
+        });
+    });
+
+    drawMap(worldjson);
+    drawArcs(selectedContinent); // show all continents at beginning
+    animateMarkers(selectedYear);
+}
+
+function drawMap() {
+    svg.selectAll(".country").remove();
+
+    svg.selectAll("append")
+        .data(topojson.feature(worldjson, worldjson.objects.countries).features)
+        .enter()
+        .append("path")
+        .attr("d", path)
+        .attr("class", "country")
+        .attr("title", function(d) {
+            return d.id;
+        })
+        .attr("fill", function(d) { 
+            if (parseInt(d.id, 10) in importAmount && (importAmount[parseInt(d.id, 10)].Continent == selectedContinent || selectedContinent == "ALL")) {
                 return "#FFFFFF"
-			}
-			else {
-				return "#A9A9A9";
-			} 
+            } else if (d.id == 840) {
+                return "#880000";
+            } else {
+                return "#A9A9A9";
+            }
         })
         .on("mouseover", function(d) {
-            d3.select(this)
-                .style("cursor", "pointer");
+            if (parseInt(d.id, 10) in importAmount) {
+                d3.select(this).style("cursor", "pointer");
+            d3.select("#c" + parseInt(d.id, 10))
+                .style("opacity", 1);
+            tip.transition()
+                .duration(200)
+                .style("opacity", .9)
+                .style("visibility", "visible");
+            tip.html(selectedYear + "</br/>" + importAmount[parseInt(d.id, 10)].Country + "<br/>$" + importAmount[parseInt(d.id, 10)][selectedYear] + " million")
+                .style("left", (d3.event.pageX - 30) + "px")
+                .style("top", (d3.event.pageY - 100) + "px");
+            }
+        })
+        .on("mouseout", function(d) {
+            d3.select("#c" + parseInt(d.id, 10))
+                .style("opacity", .6);
+            tip.transition()
+                .duration(200)
+                .style("opacity", "0");
+        })
+        .on("click", function(d) {
+            showPopup();
         });
-
-    d3.selectAll('.contButton')
-        .each(function() {
-            var id = d3.select(this).attr("id");
-            d3.select(this)
-                .style("background", function(x) {
-                    return arccolor[id];
-                });
-        });
-
-    drawArcs("ALL"); // show all continents at beginning
-    animate(2014);
 }
 
 function drawArcs(continent) {
@@ -91,6 +132,9 @@ function drawArcs(continent) {
 
     d3.select("#" + continent)
         .classed("selectedCont", true);
+
+    selectedContinent = continent;
+    drawMap();
 
     var arcs = svg.append("g")
         .attr("class", "arcs");
@@ -110,7 +154,30 @@ function drawArcs(continent) {
         .attr("stroke", function(d) {
             return arccolor[d.continent];
         })
-        .attr("opacity", .6);
+        .attr("opacity", .6)
+        .attr("stroke-dasharray", function() {
+            var totalLength = this.getTotalLength();
+            return totalLength + " " + totalLength;
+        })
+        .attr("stroke-dashoffset", function(d) {
+            var totalLength = -this.getTotalLength();
+            if (d.continent == "NA")
+                totalLength = totalLength * -1;
+            return totalLength;
+        })
+        .transition()
+            .duration(1000)
+            .ease(d3.easeLinear)
+            .attr("stroke-dashoffset", 0);
+
+    arcs.selectAll("path")
+        .on("mouseover", function(d) {
+            d3.select(this).style("cursor", "pointer")
+                .style("opacity", 1);
+        })
+        .on("mouseout", function(d) {
+            d3.select(this).style("opacity", .6);
+        });
 
     var outerCircle = svg.append("g")
         .attr("class", "circle");
@@ -168,6 +235,8 @@ function drawArcs(continent) {
         })
         .attr("r", "3px")
         .attr("fill", "#FFFFFF");
+
+    animateMarkers(selectedYear);
 }
 
 function calcArc(d, sourceName, targetName, bend) {
@@ -193,22 +262,29 @@ function calcArc(d, sourceName, targetName, bend) {
         if (isWest) {
             return "M" + sourceX + "," + sourceY + "A" + dr + "," + dr + " 0 0,1 " + targetX + "," + targetY;
         } else {
-            // return "M0,0,l0,0z";
             return "M" + targetX + "," + targetY + "A" + dr + "," + dr + " 0 0,1 " + sourceX + "," + sourceY;
         }
     }
 }
 
-function animate(year){
+function animateMarkers(year){
+    svg.selectAll(".marbol").remove();
+
+    selectedYear = year;
+
+    d3.selectAll('.yearButton')
+        .classed("selectedYear", false);
+
+    d3.select("#y" + selectedYear)
+        .classed("selectedYear", true);
+
     var jsonObjs = {
         countries:[]
     };
     var maxCap = 50000;
-    d3.csv("data/country-import-amount.csv", function(err, data){
-        if(err){
-            console.log(err);
-        }
-        data.forEach(function(d){
+
+    importData.forEach(function(d){
+        if (d.Continent == selectedContinent || selectedContinent == "ALL") {
             var cntry = d["Country"];
             var amt = d[year];
             var cid = "c" + d["CountryID"];
@@ -220,41 +296,39 @@ function animate(year){
             else if(rt > 15000){
                 rt = 11000;
             }
-            // console.log(cntry + " " + rt);
-            jsonObjs.countries.push({"cids": cid, "name": cntry, "imports": amt, "rate": rt});
-        });
 
-        for(var i = 0; i < jsonObjs.countries.length; i++){
-            var svg = d3.select("svg");
-            var rt = jsonObjs.countries[i].rate; 
-            var daPath = "path#" + jsonObjs.countries[i].cids;
-            var path = d3.select(daPath);//.attr("d");
-            // console.log("daf " + path);
-            
-            var startPoint =pathStartPoint(path);
-            // console.log("path start:" + startPoint);
-            
-            var marker = svg.append("circle").attr("class", "marbol");
-            marker.attr("r", 3)
-                .attr("transform", "translate(" + startPoint + ")");
+            jsonObjs.countries.push({"cids": cid, "name": cntry, "imports": amt, "rate": rt});
+        }
+    });
+
+
+
+    for(var i = 0; i < jsonObjs.countries.length; i++){
+        var rt = jsonObjs.countries[i].rate; 
+        var daPath = "path#" + jsonObjs.countries[i].cids;
+        var path = d3.select(daPath);//.attr("d");
+
+        var startPoint =pathStartPoint(path);
+        
+        var marker = svg.append("circle").attr("class", "marbol");
+        marker.attr("r", 3)
+            .attr("transform", "translate(" + startPoint + ")");
 
         transitionAll(marker, path, rt);
-        // console.log("transition called");
-        }
+    }
 
-        function pathStartPoint(path){
-            var d = path.attr("d");
-            var dsplitted = d.split(" ");
-            return dsplitted[1].split(",");
-        }
+    function pathStartPoint(path){
+        var d = path.attr("d");
+        var dsplitted = d.split(" ");
+        return dsplitted[1].split(",");
+    }
 
-        function transitionAll(marker, path, rt){
-            // console.log(marker);
-            marker.transition()
-                .duration(rt).ease(d3.easeLinear)
-                .attrTween("transform", translateAlong(path.node()))
-                .on("end", partial(transitionAll, marker, path, rt));
-        }
+    function transitionAll(marker, path, rt){
+        marker.transition()
+            .duration(rt).ease(d3.easeLinear)
+            .attrTween("transform", translateAlong(path.node()))
+            .on("end", partial(transitionAll, marker, path, rt));
+    }
 
         function translateAlong(path){
             var l = path.getTotalLength();
@@ -266,16 +340,16 @@ function animate(year){
                     return "translate(" + (p.x) + "," + (p.y) + ")";
                 }
             }
-        }  
+        }
+    }  
 
-        function partial(func){
-            var args = Array.prototype.slice.call(arguments, 1);
-            return function(){
-                var allArguments = args.concat(Array.prototype.slice.call(arguments));
-                return func.apply(this, allArguments);
-            };
-        }          
-    }); 
+    function partial(func){
+        var args = Array.prototype.slice.call(arguments, 1);
+        return function(){
+            var allArguments = args.concat(Array.prototype.slice.call(arguments));
+            return func.apply(this, allArguments);
+        };
+    }          
 }
 
 makeLightbox(){
@@ -288,17 +362,17 @@ makeLightbox(){
 
 
 /*d3.json("https://d3js.org/world-110m.v1.json", function(error, world) {
-	if (error) throw error;
+    if (error) throw error;
 
-	svg.selectAll("append")
-		.data(topojson.feature(world, world.objects.countries).features)
-		.enter()
-		.append("path")
-		.attr("d", path)
-		.attr("class", "country")
-		.attr("fill", function(d) { return color(d.imports = importAmount.get(d.id)); })
-		.on("mouseover", function(d) {
-			console.log(d.id);
-		});
+    svg.selectAll("append")
+        .data(topojson.feature(world, world.objects.countries).features)
+        .enter()
+        .append("path")
+        .attr("d", path)
+        .attr("class", "country")
+        .attr("fill", function(d) { return color(d.imports = importAmount.get(d.id)); })
+        .on("mouseover", function(d) {
+            console.log(d.id);
+        });
 })*/
     

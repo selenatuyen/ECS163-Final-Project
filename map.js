@@ -57,7 +57,9 @@ function ready(error, world, csv) {
     worldjson = world;
 
     csv.forEach(function(d) {
-        makeLightbox(d["Country"]);
+        var cid = "s" + d["CountryID"];
+        makeLightbox(cid);
+        console.log("made box");
         importAmount[d.CountryID] = {};
         for (var key in d) {
             if (key != "CountryID")
@@ -120,16 +122,18 @@ function drawMap() {
                 .style("opacity", "0");
         })
         .on("click", function(d) {
-            goToAnchor(importAmount[parseInt(d.id, 10)].Country);
-            d3.select("#" + importAmount[parseInt(d.id, 10)].Country)
+            var cid = "s" + parseInt(d.id, 10);
+            goToAnchor(cid);
+            var call = d3.select("#" + cid)
                 .append("div").attr("id", "sunbst");
             starburst("sunbst");    
+            // call.on('click', function(){rmSunburst(cid);});
         });    
 }
 
-function goToAnchor(country) {
+function goToAnchor(cid) {
   var loc = document.location.toString().split('#')[0];
-  document.location = loc + '#' + country;
+  document.location = loc + '#' + cid;
   return false;
 }
 
@@ -361,12 +365,17 @@ function animateMarkers(year){
     }          
 }
 
-function makeLightbox(country){
+function makeLightbox(cid){
     var at = d3.select("body")
         .append("a")
         .attr("class", "lightbox")
         .attr('href', "#_")
-        .attr('id', country);   
+        .attr('id', cid)
+        .on('click', function(){rmSunburst(cid);});   
+}
+
+function rmSunburst(cid){
+    var att = d3.select("div#sunbst").remove();
 }
 
 function starburst(idname){

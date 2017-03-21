@@ -629,7 +629,7 @@ function starburst(idname, country){
         var svg = d3.select("div#sunbst");
          svg.select("svg").append("g")
           .attr("class", "legendOrdinal")
-          .attr("transform", "translate(500,90)");
+          .attr("transform", "translate(600,90)");
            svg.select("svg").append("text")
             .text(selectedYear + " - " + country)
             .attr("font-size", "1.5em")
@@ -641,12 +641,12 @@ function starburst(idname, country){
             .attr("transform", "translate(500,60)");
         svg.select("svg").append("text")
             .attr("font-size", "20px")
-            .attr("transform", "translate(170,230)")
+            .attr("transform", "translate(250,230)")
             .attr("class", "middle-type");
 
         svg.select("svg").append("text")
             .attr("font-size", "20px")
-            .attr("transform", "translate(165,230)")
+            .attr("transform", "translate(250,230)")
             .attr("dy", "1.5em")
             .attr("class", "middle-value");
 
@@ -660,7 +660,7 @@ function starburst(idname, country){
             svg.select("svg").append("text")
                 .text("No data available")
                 .attr("font-size", "20px")
-                .attr("transform", "translate(165,230)")
+                .attr("transform", "translate(250,230)")
         }
 
         var legendOrdinal = d3.legendColor()

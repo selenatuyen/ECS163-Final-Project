@@ -629,12 +629,16 @@ function starburst(idname, country){
         var svg = d3.select("div#sunbst");
          svg.select("svg").append("g")
           .attr("class", "legendOrdinal")
-          .attr("transform", "translate(500,60)");
+          .attr("transform", "translate(500,90)");
            svg.select("svg").append("text")
-            .text("Food Types of " + country)
+            .text(selectedYear + " - " + country)
             .attr("font-size", "1.5em")
             .attr("transform", "translate(500,40)");
 
+        svg.select("svg").append("text")
+            .text("Dollars Spent on Each Food Type")
+            .attr("font-size", "1em")
+            .attr("transform", "translate(500,60)");
         svg.select("svg").append("text")
             .attr("font-size", "20px")
             .attr("transform", "translate(170,230)")

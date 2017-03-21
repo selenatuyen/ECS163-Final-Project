@@ -24,7 +24,7 @@ var path2 = d3.arc()
 function pieChart() {
 	var color = d3.scaleOrdinal(d3.schemeCategory20b);
 
-	d3.select(".title").text(selectedYear + " Food Types");
+	d3.select(".title").text("Food Types Imported in " + selectedYear + " (MT)");
 
 	d3.csv("Data/world-totals.csv", function(d) {
 		for (var i = 1999; i < 2015; i++) {
@@ -134,7 +134,7 @@ function animPath(path, dir) {
 
 function updatePie(yr) {
 	console.log(yr);
-	d3.select(".title").text(yr + " Food Types");
+	d3.select(".title").text("Food Types Imported in " + selectedYear + " (MT)");
 
 	pie.value(function(d) { return d[yr]; });
 	var newarc = arcPie.data(pie(keepData))

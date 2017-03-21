@@ -539,9 +539,34 @@ function starburst(idname, country){
 
       var visualize = d3Kit.helper.debounce(function(){
         if(!skeleton.hasData()) return skeleton;
-
+        var i = 0;
+        var myArray = new Array(11);
         var root = d3.hierarchy(skeleton.data());
-        root.sum(function(d) { return d.value; });
+        root.sum(function(d) 
+            { 
+                /*
+                if(typeof d.value == 'undefined' && check == 0)
+                    return d.value;
+                else
+                {
+                    check = 1;
+                    return 1;
+                }
+                */
+                if(d.name == "coffeetea" || d.name == "dairy" || d.name == "fish" || d.name == "fruits" 
+                || d.name == "grains" || d.name == "meats" || d.name == "nuts" || d.name == "other"
+                || d.name == "sweets" || d.name == "vegetables" || d.name == "vegoils") 
+                {
+                    if(d.children.length != 0)
+                    {
+                        myArray[i] = d.name;
+                    }
+                    i++;
+                }
+                return d.value; 
+            });
+
+
         node = root;
 
         radius = Math.min(skeleton.getInnerWidth(), skeleton.getInnerHeight()) / 2;
@@ -593,13 +618,13 @@ function starburst(idname, country){
               return d.data.name;
             }
           );
-					
+                    
         path
           .attr("d", arc);
 
 
         var ordinal = d3.scaleOrdinal(d3.schemeCategory20c)
-        .domain(["Coffee Tea", "Dairy", "Fish", "Fruits", "Grains", "Meats", "Nuts", "Other", "Sweets", "Vegetables", "Vegoils"])
+        .domain(myArray);
 
         var svg = d3.select("div#sunbst");
          svg.select("svg").append("g")

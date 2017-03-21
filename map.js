@@ -551,6 +551,10 @@ function starburst(idname, country){
         var path = core.selectAll("path")
           .data(partition(root).descendants());
 
+        var svg = d3.select("div#sunbst");
+
+
+
         path.enter().append("path")
           .call(d3Kit.helper.bindMouseEventsToDispatcher, dispatch, 'arc')
           .style('fill', colorFn)
@@ -561,6 +565,26 @@ function starburst(idname, country){
                 return .7;
           })
           .attr("d", arc)
+          .on("mouseover", function(d) {
+            console.log(d);
+            svg.select(".middle-type").html(d.data.name);
+            if (d.data.value)
+                svg.select(".middle-value").html("$" + d.data.value + " million");
+            if (d.data.children && d.data.name != selectedYear) {
+                // display sum of children
+                var sum = 0;
+                for (var i = 0; i < d.data.children.length; i++) {
+                    console.log("sum " + d.data.children[i].value);
+                    sum += parseInt(d.data.children[i].value);
+                }
+                svg.select(".middle-value").html("$" + sum + " million");
+            }
+            
+          })
+          .on("mouseout", function() {
+            svg.select(".middle-type").html("");
+            svg.select(".middle-value").html("");
+          })
           .append('title')
           .text( function(d) 
             {
@@ -585,6 +609,17 @@ function starburst(idname, country){
             .text("Food Types of " + country)
             .attr("font-size", "1.5em")
             .attr("transform", "translate(500,40)");
+
+        svg.select("svg").append("text")
+            .attr("font-size", "20px")
+            .attr("transform", "translate(170,230)")
+            .attr("class", "middle-type");
+
+        svg.select("svg").append("text")
+            .attr("font-size", "20px")
+            .attr("transform", "translate(165,230)")
+            .attr("dy", "1.5em")
+            .attr("class", "middle-value");
 
         var hasData = false;
         for (var i = 0; i < foodData.children.length; i++) {

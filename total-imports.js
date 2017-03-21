@@ -45,7 +45,6 @@ function pieChart() {
 			.attr("fill", function(d) { return color(d.data.Type); })
 			.on("mouseover", function(d) {
 				animPath(d3.select(this), 1);
-				console.log(d);
 				d3.select(".donut-type")
 					.html(d.data.Type);
 				d3.select(".donut-value")
@@ -53,6 +52,10 @@ function pieChart() {
 			})
 			.on("mouseout", function() {
 				animPath(d3.select(this), 0);
+				d3.select(".donut-type")
+					.html("");
+				d3.select(".donut-value")
+					.html("");
 			});
 
 		svg2.append("text")
